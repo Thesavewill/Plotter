@@ -43,55 +43,42 @@ class MainActivity : ComponentActivity() {
 fun Greeting(gridSize: Float = 70f, modifier: Modifier = Modifier) {
     var lineColor1 = colorResource(id = R.color.gray)
     var lineColor2 = colorResource(id = R.color.black)
-    var lineColor = lineColor1
 
     var offsetX by remember { mutableStateOf(0f) }
     var offsetY by remember { mutableStateOf(0f) }
 
-    var x = offsetX % gridSize
-    var y = offsetY % gridSize
-
-    var dragX by remember { mutableStateOf(0f) }
-    var dragY by remember { mutableStateOf(0f) }
-
     Box(modifier = Modifier.pointerInput( Unit){
         detectDragGestures{change, dragAmount ->
             change.consume()
-            dragX += dragAmount.x
-            dragY += dragAmount.y
             offsetX += dragAmount.x
             offsetY += dragAmount.y
         }
     }
     ) {
         Canvas(modifier = Modifier.fillMaxSize()) {
+            val gridWidth = 5f
+
             val width = size.width
             val height = size.height
-            var gridWidth = 5f
 
-            while (y <= height) {                    // ГОРИЗОНТАЛЬ
-                if (y == dragY){
-                    lineColor = lineColor2
-                }
-                else lineColor = lineColor1
+            var x = offsetX % gridSize
+            var y = offsetY % gridSize
+
+            while (y <= height) {                     //ГОРИЗОНТАЛЬ
                 drawLine(
-                    color = lineColor,
+                    color = lineColor1,
                     start = Offset(0f, y),
-                    end = Offset(size.width, y),
+                    end = Offset(width, y),
                     strokeWidth = gridWidth
                 )
                 y += gridSize
             }
 
-            while (x <= width) {                      // ВЕРТИКАЛЬ
-                if (x == dragX){
-                    lineColor = lineColor2
-                }
-                else lineColor = lineColor1
+            while (x <= width) {                      //ВЕРТИКАЛЬ
                 drawLine(
-                    color = lineColor,
+                    color = lineColor1,
                     start = Offset(x, 0f),
-                    end = Offset(x, size.height),
+                    end = Offset(x, height),
                     strokeWidth = gridWidth
                 )
                 x += gridSize
@@ -106,7 +93,6 @@ fun Greeting(gridSize: Float = 70f, modifier: Modifier = Modifier) {
                     strokeWidth = gridWidth * 1.5f
                 )
             }
-
             val axisY = offsetY                       //Ось Y
             if (axisY in 0f..height) {
                 drawLine(
