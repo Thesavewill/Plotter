@@ -60,8 +60,8 @@ fun Greeting(gridSize: Float = 30f, modifier: Modifier = Modifier) {
         Canvas(modifier = Modifier.fillMaxSize()) {
             val width = size.width
             val height = size.height
-
-            while (y <= height) {                   // ГОРИЗАНТАЛЬ
+            var gridWidth = 4f
+            while (y <= height) {                   // ГОРИЗОНТАЛЬ
                 drawLine(
                     color = lineColor,
                     start = Offset(0f, y),
