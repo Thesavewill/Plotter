@@ -66,7 +66,7 @@ fun Greeting(gridSize: Float = 30f, modifier: Modifier = Modifier) {
                     color = lineColor,
                     start = Offset(0f, y),
                     end = Offset(size.width, y),
-                    strokeWidth = 4f
+                    strokeWidth = gridWidth
                 )
                 y += gridSize
             }
