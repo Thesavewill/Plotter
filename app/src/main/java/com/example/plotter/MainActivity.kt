@@ -96,6 +96,26 @@ fun Greeting(gridSize: Float = 70f, modifier: Modifier = Modifier) {
                 )
                 x += gridSize
             }
+
+            val axisX = offsetX                       //Ось X
+            if (axisX in 0f..width) {
+                drawLine(
+                    color = lineColor2,
+                    start = Offset(axisX, 0f),
+                    end = Offset(axisX, height),
+                    strokeWidth = gridWidth * 1.5f
+                )
+            }
+
+            val axisY = offsetY                       //Ось Y
+            if (axisY in 0f..height) {
+                drawLine(
+                    color = lineColor2,
+                    start = Offset(0f, axisY),
+                    end = Offset(width, axisY),
+                    strokeWidth = gridWidth * 1.5f
+                )
+            }
         }
     }
 }
