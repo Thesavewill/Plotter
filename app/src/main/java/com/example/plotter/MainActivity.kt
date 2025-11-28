@@ -6,6 +6,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -44,7 +45,7 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun Greeting(gridSize: Float = 70f, modifier: Modifier = Modifier) {
+fun Greeting(modifier: Modifier = Modifier) {
     val lineColor1 = colorResource(id = R.color.light_gray)   // ЗАРАНЕЕ ОПРЕДЕЛЯЕМ ЦВЕТА ДЛЯ Canvas
     val lineColor2 = colorResource(id = R.color.gray)         // ЗАРАНЕЕ ОПРЕДЕЛЯЕМ ЦВЕТА ДЛЯ Canvas
     val lineColor3 = colorResource(id = R.color.black)        // ЗАРАНЕЕ ОПРЕДЕЛЯЕМ ЦВЕТА ДЛЯ Canvas
@@ -69,7 +70,7 @@ fun Greeting(gridSize: Float = 70f, modifier: Modifier = Modifier) {
         }
     ) {
         Canvas(modifier = Modifier.fillMaxSize()) {
-            val gridWidth = 4f
+            val gridWidth = 2f
 
             val width = size.width
             val height = size.height
