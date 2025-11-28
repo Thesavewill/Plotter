@@ -52,12 +52,21 @@ fun Greeting(gridSize: Float = 70f, modifier: Modifier = Modifier) {
     var offsetX by remember { mutableFloatStateOf(0f) }
     var offsetY by remember { mutableFloatStateOf(0f) }
 
-    Box(modifier = Modifier.pointerInput( Unit){          //ДВИЖЕНИЕ СЕТКИ
-        detectDragGestures{change, dragAmount -> change.consume()
-            offsetX += dragAmount.x
-            offsetY += dragAmount.y
+    var gridSize: Float = 50f
+    Box(modifier = Modifier
+        .pointerInput( Unit){                               //ДВИЖЕНИЕ СЕТКИ
+                detectDragGestures{change, dragAmount -> change.consume()
+                offsetX += dragAmount.x
+                offsetY += dragAmount.y
+            }
         }
-    }
+            .pointerInput(Unit) {                           //ЗУМ СЕТКИ
+                detectTransformGestures { centroid, pan, zoom, rotation ->
+                offsetX += pan.x
+                offsetY += pan.y
+                gridSize *= zoom
+            }
+        }
     ) {
         Canvas(modifier = Modifier.fillMaxSize()) {
             val gridWidth = 4f
