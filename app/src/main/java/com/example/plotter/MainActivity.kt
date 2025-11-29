@@ -1,5 +1,7 @@
 package com.example.plotter
 
+import android.R.attr.height
+import android.R.attr.width
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -8,11 +10,15 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -24,6 +30,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import com.example.plotter.ui.theme.PlotterTheme
 import kotlin.math.abs
 import kotlin.math.roundToInt
@@ -52,9 +59,22 @@ fun Greeting(modifier: Modifier = Modifier) {
 
     var offsetX by remember { mutableFloatStateOf(0f) }
     var offsetY by remember { mutableFloatStateOf(0f) }
+    var gridSize by remember { mutableFloatStateOf(0f) }
+    var scale by remember { mutableStateOf(1f) }
+    var countScale by remember { mutableStateOf(0) }
 
-    var gridSize: Float = 50f
-    Box(modifier = Modifier
+    if (scale >= 2f){
+        countScale++
+        scale /= 2f
+        gridSize /= 2f
+    }
+    if (scale <= 0.5f){
+        countScale--
+        scale *= 2f
+        gridSize *= 2f
+    }
+
+    BoxWithConstraints(modifier = Modifier
         .pointerInput( Unit){                               //ДВИЖЕНИЕ СЕТКИ
                 detectDragGestures{change, dragAmount -> change.consume()
                 offsetX += dragAmount.x
@@ -66,11 +86,19 @@ fun Greeting(modifier: Modifier = Modifier) {
                 offsetX += pan.x
                 offsetY += pan.y
                 gridSize *= zoom
+                    scale *= zoom
             }
         }
     ) {
+        //ЦЕНТРИРУЕМ СЕТКУ 1 РАЗ
+        if (offsetX == 0f && offsetY == 0f) {
+            offsetX = constraints.maxWidth.toFloat() / 2f
+            offsetY = constraints.maxHeight.toFloat() / 4f
+            gridSize = constraints.maxWidth.toFloat() / 20f
+        }
+
         Canvas(modifier = Modifier.fillMaxSize()) {
-            val gridWidth = 2f
+            val lineWidth = 2f
 
             val width = size.width
             val height = size.height
@@ -87,16 +115,16 @@ fun Greeting(modifier: Modifier = Modifier) {
                     color = lineColor1,
                     start = Offset(0f, minorY),
                     end = Offset(width, minorY),
-                    strokeWidth = gridWidth
+                    strokeWidth = lineWidth
                 )
                 minorY += gridSize
             }
-            while (minorX < width) {                     //ВЕРТИКАЛЬНЫЕ МИНОРНЫЕ ЛИНИИ
+            while (minorX < width) {                      //ВЕРТИКАЛЬНЫЕ МИНОРНЫЕ ЛИНИИ
                 drawLine(
                     color = lineColor1,
                     start = Offset(minorX, 0f),
                     end = Offset(minorX, height),
-                    strokeWidth = gridWidth
+                    strokeWidth = lineWidth
                 )
                 minorX += gridSize
             }
@@ -108,7 +136,7 @@ fun Greeting(modifier: Modifier = Modifier) {
                         color = lineColor2,
                         start = Offset(0f, majorY),
                         end = Offset(width, majorY),
-                        strokeWidth = gridWidth
+                        strokeWidth = lineWidth
                     )
                 }
                 majorY += gridSize
@@ -119,7 +147,7 @@ fun Greeting(modifier: Modifier = Modifier) {
                         color = lineColor2,
                         start = Offset(majorX, 0f),
                         end = Offset(majorX, height),
-                        strokeWidth = gridWidth
+                        strokeWidth = lineWidth
                     )
                 }
                 majorX += gridSize
@@ -131,7 +159,7 @@ fun Greeting(modifier: Modifier = Modifier) {
                     color = lineColor3,
                     start = Offset(0f, offsetY),
                     end = Offset(width, offsetY),
-                    strokeWidth = gridWidth * 1.5f
+                    strokeWidth = lineWidth * 1.5f
                 )
             }
             if (offsetX < width) {                      //Ось Y
@@ -139,9 +167,33 @@ fun Greeting(modifier: Modifier = Modifier) {
                     color = lineColor3,
                     start = Offset(offsetX, 0f),
                     end = Offset(offsetX, height),
-                    strokeWidth = gridWidth * 1.5f
+                    strokeWidth = lineWidth * 1.5f
                 )
             }
         }
+
+        //========================ОТЛАДКА=================================
+        Column(modifier = Modifier.padding(top = 30.dp, start = 10.dp)) {
+            Text(
+                text = "$scale",
+                modifier = Modifier
+            )
+            Text(
+                text = "$gridSize",
+                modifier = Modifier
+            )
+            Text(
+                text = "$countScale",
+                modifier = Modifier
+            )
+        }
     }
+}
+
+@Preview(showSystemUi = true, showBackground = true,
+    device = "spec:width=360px,height=1000px,dpi=440"
+)
+@Composable
+fun Preview(){
+    Greeting()
 }
