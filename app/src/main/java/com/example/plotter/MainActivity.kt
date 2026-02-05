@@ -1,24 +1,25 @@
 package com.example.plotter
 
-import android.R.attr.height
-import android.R.attr.width
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -31,8 +32,8 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.plotter.ui.theme.PlotterTheme
-import kotlin.math.abs
 import kotlin.math.roundToInt
 
 class MainActivity : ComponentActivity() {
@@ -63,6 +64,8 @@ fun Greeting(modifier: Modifier = Modifier) {
     var scale by remember { mutableStateOf(1f) }
     var countScale by remember { mutableStateOf(0) }
 
+    var textState by remember { mutableStateOf("") }
+
     if (scale >= 2f){
         countScale++
         scale /= 2f
@@ -83,9 +86,9 @@ fun Greeting(modifier: Modifier = Modifier) {
         }
             .pointerInput(Unit) {                           //ЗУМ СЕТКИ
                 detectTransformGestures { centroid, pan, zoom, rotation ->
-                offsetX += pan.x
-                offsetY += pan.y
-                gridSize *= zoom
+                    offsetX += pan.x
+                    offsetY += pan.y
+                    gridSize *= zoom
                     scale *= zoom
             }
         }
@@ -97,6 +100,7 @@ fun Greeting(modifier: Modifier = Modifier) {
             gridSize = constraints.maxWidth.toFloat() / 20f
         }
 
+        //========================СЕТКА=================================
         Canvas(modifier = Modifier.fillMaxSize()) {
             val lineWidth = 2f
 
@@ -172,6 +176,36 @@ fun Greeting(modifier: Modifier = Modifier) {
             }
         }
 
+        //========================ИНТЕРФЕЙС ВВОДА ФУНКЦИИ=================================
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(top = maxHeight / 2)
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(75.dp)
+                    .background(Color.White)
+                    .border(2.dp, lineColor3)
+                    .padding(8.dp)
+            ) {
+                BasicTextField(
+                    value = textState,
+                    onValueChange = { textState = it },
+                    modifier = Modifier.fillMaxSize(),
+                    textStyle = androidx.compose.ui.text.TextStyle(fontSize = 18.sp)
+                )
+            }
+
+            Box(
+                Modifier
+                    .fillMaxSize()
+                    .background(Color.White)
+                    .border(2.dp, lineColor3)
+            )
+        }
+
         //========================ОТЛАДКА=================================
         Column(modifier = Modifier.padding(top = 30.dp, start = 10.dp)) {
             Text(
@@ -191,7 +225,7 @@ fun Greeting(modifier: Modifier = Modifier) {
 }
 
 @Preview(showSystemUi = true, showBackground = true,
-    device = "spec:width=360px,height=1000px,dpi=440"
+    device = "spec:width=720px,height=1680px,dpi=440"
 )
 @Composable
 fun Preview(){
