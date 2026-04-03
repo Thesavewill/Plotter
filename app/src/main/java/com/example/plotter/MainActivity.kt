@@ -52,6 +52,82 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+// Тестовая функция
+val mySin = object : Function("mySin", 1) {
+    override fun apply(vararg args: Double): Double {
+        val x = args[0]
+        return x - x.pow(3.0) / 6 + x.pow(5.0) / 120
+    }
+}
+// Список всех кастомных функций exp4j
+val customFunctions = listOf(mySin)
+
+// Определения вида функции
+fun DrawScope.Fuction1(offsetX: Float, offsetY: Float, gridSize: Float, countScale: Int, expressionString: String) {
+    if (expressionString.isBlank()) return
+
+    val unitSize = gridSize * 2f.pow(countScale.toFloat())
+    val path = Path()
+    var started = false
+
+    val expression = try {
+        ExpressionBuilder(expressionString)
+            .variable("x")
+            .functions(customFunctions)
+            .build()
+    } catch (e: Exception) {
+        null
+    }
+
+    if (expression == null) return
+
+    val step = 1
+    for (px in 0..size.width.toInt() step step) {
+        val x = (px - offsetX) / unitSize
+
+        val y = try {
+            expression.setVariable("x", x.toDouble()).evaluate().toFloat()
+        } catch (e: Exception) {
+            Float.NaN
+        }
+
+        val py = offsetY - y * unitSize
+
+        if (py.isFinite()) {
+            if (!started) {
+                path.moveTo(px.toFloat(), py)
+                started = true
+            } else {
+                if (py > -1000f && py < size.height + 1000f) {
+                    path.lineTo(px.toFloat(), py)
+                } else {
+                    started = false
+                }
+            }
+        } else {
+            started = false
+        }
+    }
+
+    drawPath(
+        path = path,
+        color = Color.Blue,
+        style = Stroke(width = 4f)
+    )
+}
+fun DrawScope.Neravenstvo(offsetX: Float, offsetY: Float, gridSize: Float, countScale: Int, text: String){
+
+}
+
+fun DrawScope.CheckFunc(offsetX: Float, offsetY: Float, gridSize: Float, countScale: Int, text: String){
+    if (("<" in text) or ("=" in text) or (">" in text)){
+        Neravenstvo(offsetX, offsetY, gridSize, countScale, text)
+    }
+    else {
+        Fuction1(offsetX, offsetY, gridSize, countScale, text)
+    }
+}
+
 @Composable
 fun Greeting(modifier: Modifier = Modifier) {
     val lineColor1 = colorResource(id = R.color.light_gray)   // ЗАРАНЕЕ ОПРЕДЕЛЯЕМ ЦВЕТА ДЛЯ Canvas
