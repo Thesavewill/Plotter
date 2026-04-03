@@ -16,7 +16,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -28,12 +29,18 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.plotter.ui.theme.PlotterTheme
+import net.objecthunter.exp4j.ExpressionBuilder
+import net.objecthunter.exp4j.function.Function
+import kotlin.math.pow
 import kotlin.math.roundToInt
 
 class MainActivity : ComponentActivity() {
@@ -62,7 +69,6 @@ val mySin = object : Function("mySin", 1) {
 // Список всех кастомных функций exp4j
 val customFunctions = listOf(mySin)
 
-// Определения вида функции
 fun DrawScope.Fuction1(offsetX: Float, offsetY: Float, gridSize: Float, countScale: Int, expressionString: String) {
     if (expressionString.isBlank()) return
 
@@ -119,6 +125,7 @@ fun DrawScope.Neravenstvo(offsetX: Float, offsetY: Float, gridSize: Float, count
 
 }
 
+// Определения вида функции
 fun DrawScope.CheckFunc(offsetX: Float, offsetY: Float, gridSize: Float, countScale: Int, text: String){
     if (("<" in text) or ("=" in text) or (">" in text)){
         Neravenstvo(offsetX, offsetY, gridSize, countScale, text)
@@ -142,30 +149,32 @@ fun Greeting(modifier: Modifier = Modifier) {
 
     var textState by remember { mutableStateOf("") }
 
-    if (scale >= 2f){
+    if (scale >= 2f) {
         countScale++
         scale /= 2f
         gridSize /= 2f
     }
-    if (scale <= 0.5f){
+    if (scale <= 0.5f) {
         countScale--
         scale *= 2f
         gridSize *= 2f
     }
-
-    BoxWithConstraints(modifier = Modifier
-        .pointerInput( Unit){                               //ДВИЖЕНИЕ СЕТКИ
-                detectDragGestures{change, dragAmount -> change.consume()
+    
+    BoxWithConstraints(
+        modifier = Modifier
+        .pointerInput(Unit) {                               //ДВИЖЕНИЕ СЕТКИ
+            detectDragGestures { change, dragAmount ->
+                change.consume()
                 offsetX += dragAmount.x
                 offsetY += dragAmount.y
             }
         }
-            .pointerInput(Unit) {                           //ЗУМ СЕТКИ
-                detectTransformGestures { centroid, pan, zoom, rotation ->
-                    offsetX += pan.x
-                    offsetY += pan.y
-                    gridSize *= zoom
-                    scale *= zoom
+        .pointerInput(Unit) {                                //ЗУМ СЕТКИ
+            detectTransformGestures { centroid, pan, zoom, rotation ->
+                offsetX += pan.x
+                offsetY += pan.y
+                gridSize *= zoom
+                scale *= zoom
             }
         }
     ) {
@@ -176,7 +185,7 @@ fun Greeting(modifier: Modifier = Modifier) {
             gridSize = constraints.maxWidth.toFloat() / 20f
         }
 
-        //========================СЕТКА=================================
+        //========================СЕТКА==================================================
         Canvas(modifier = Modifier.fillMaxSize()) {
             val lineWidth = 2f
 
@@ -269,14 +278,29 @@ fun Greeting(modifier: Modifier = Modifier) {
                     .border(2.dp, lineColor3)
                     .padding(8.dp)
             ) {
-                BasicTextField(
-                    value = textState,
-                    onValueChange = { textState = it },
-                    modifier = Modifier.fillMaxSize(),
-                    textStyle = androidx.compose.ui.text.TextStyle(fontSize = 18.sp)
-                )
+                LazyColumn {
+                    item {
+                        OutlinedTextField(
+                            value = textState,
+                            onValueChange = { textState = it },
+                            modifier = Modifier.fillMaxSize(),
+                            singleLine = true,
+                            maxLines = 1,
+                            textStyle = androidx.compose.ui.text.TextStyle(fontSize = 18.sp)
+                        )
+                    }
+                    item {
+                        OutlinedTextField(
+                            value = textState,
+                            onValueChange = { textState = it },
+                            modifier = Modifier.fillMaxSize(),
+                            singleLine = true,
+                            maxLines = 1,
+                            textStyle = androidx.compose.ui.text.TextStyle(fontSize = 18.sp)
+                        )
+                    }
+                }
             }
-
             Box(
                 Modifier
                     .fillMaxSize()
