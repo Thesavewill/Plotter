@@ -233,6 +233,9 @@ fun Greeting(modifier: Modifier = Modifier) {
                 majorX += gridSize
             }
 
+            //=======================Отрисовка графика=======================================
+            CheckFunc(offsetX, offsetY, gridSize, countScale, textState)
+
             //----------------Ox и Oy--------------
             if (offsetY < height) {                     //Ось X
                 drawLine(
