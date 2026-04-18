@@ -33,7 +33,6 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -42,10 +41,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -137,7 +136,6 @@ fun DrawScope.Fuction1(offsetX: Float, offsetY: Float, gridSize: Float, countSca
         style = Stroke(width = 4f)
     )
 }
-fun DrawScope.Neravenstvo(offsetX: Float, offsetY: Float, gridSize: Float, countScale: Int, text: String){
 
 //fun DrawScope.Neravenstvo(offsetX: Float, offsetY: Float, gridSize: Float, countScale: Int, text: String, color: Color)
 
@@ -147,9 +145,6 @@ fun DrawScope.CheckFunc(offsetX: Float, offsetY: Float, gridSize: Float, countSc
         //Neravenstvo(offsetX, offsetY, gridSize, countScale, text)
     } else {
         Fuction1(offsetX, offsetY, gridSize, countScale, item.text.value, item.color.value)
-    }
-    else {
-        Fuction1(offsetX, offsetY, gridSize, countScale, text)
     }
 }
 
@@ -180,7 +175,6 @@ fun Greeting(modifier: Modifier = Modifier) {
         scale *= 2f
         gridSize *= 2f
     }
-    
     BoxWithConstraints(
         modifier = Modifier
             .pointerInput(Unit) {
@@ -301,9 +295,6 @@ fun Greeting(modifier: Modifier = Modifier) {
                 }
                 majorX += gridSize
             }
-
-            //=======================Отрисовка графика=======================================
-            CheckFunc(offsetX, offsetY, gridSize, countScale, textState)
 
             //----------------Ox и Oy--------------
             if (offsetY < height) {                     //Ось X
