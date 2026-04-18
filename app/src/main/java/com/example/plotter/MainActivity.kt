@@ -184,7 +184,7 @@ fun Greeting(modifier: Modifier = Modifier) {
     BoxWithConstraints(
         modifier = Modifier
             .pointerInput(Unit) {
-                detectTransformGestures { centroid, pan, zoom, rotation ->
+                detectTransformGestures { centroid, pan, zoom, _ ->
                     offsetX += pan.x
                     offsetY += pan.y
                     if (zoom != 1f) {
