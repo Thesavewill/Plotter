@@ -1,5 +1,6 @@
 package com.example.plotter
 
+import android.graphics.Paint
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
