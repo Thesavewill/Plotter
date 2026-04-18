@@ -164,7 +164,7 @@ fun DrawScope.CheckFunc(offsetX: Float, offsetY: Float, gridSize: Float, countSc
         Fuction1(offsetX, offsetY, gridSize, countScale, text)
     }
 }
-
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Greeting(modifier: Modifier = Modifier) {
     val lineColor1 = colorResource(id = R.color.light_gray)   // ЗАРАНЕЕ ОПРЕДЕЛЯЕМ ЦВЕТА ДЛЯ Canvas
