@@ -269,6 +269,7 @@ fun Greeting(modifier: Modifier = Modifier) {
                         strokeWidth = lineWidth
                     )
 
+                    //Числовая разметка
                     val yValue = -(lineIndex.toFloat() / unitFactor) / 4
                     val textToShow = if (countScale <= 0) {
                         yValue.toInt()
