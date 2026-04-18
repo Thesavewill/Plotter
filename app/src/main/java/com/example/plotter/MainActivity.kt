@@ -260,7 +260,8 @@ fun Greeting(modifier: Modifier = Modifier) {
 
             //----------------Мажорные линии сетки--------------
             while (majorY < height) {                       //ГОРИЗОНТАЛЬНЫЕ МАЖОРНЫЕ ЛИНИИ
-                if (((majorY - offsetY) / gridSize).roundToInt() % 4f == 0f) {
+                val lineIndex = ((majorY - offsetY) / gridSize).roundToInt()
+                if (lineIndex % 4 == 0) {
                     drawLine(
                         color = lineColor2,
                         start = Offset(0f, majorY),
