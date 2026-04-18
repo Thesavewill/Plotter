@@ -450,6 +450,53 @@ fun Greeting(modifier: Modifier = Modifier) {
                 modifier = Modifier
             )
         }
+        */
+
+        //===============================ВЫБОР ЦВЕТА ГРАФИКА=================================
+        //Список цветов на выбор
+        val colorChoices = listOf(
+            Color.Red, Color.Blue, Color.Green, Color.Yellow,
+            Color.Magenta, Color.Cyan, Color.Black, Color.Gray,
+            Color(0xFFFFA500), Color(0xFF800080), Color(0xFF008080), Color(0xFFFFC0CB)
+        )
+
+        //Поле выбора цвета
+        if (showColorPicker && selectedItemForColor != null) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.BottomCenter
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth().height(200.dp)
+                        .background(Color.White, RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
+                        .border(1.dp, Color.Black, RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
+                        .padding(16.dp)
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text("Цвет графика", fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
+                        Text(
+                            "Закрыть",
+                            color = Color.Blue,
+                            modifier = Modifier.clickable { showColorPicker = false }
+                        )
+                    }
+                    LazyVerticalGrid(
+                        columns = GridCells.Fixed(5),
+                        modifier = Modifier.height(150.dp)
+                    ) {
+                        items(colorChoices.size) { index ->
+                            Box(
+                                modifier = Modifier
+                                    .padding(4.dp).aspectRatio(1f)
+                                    .background(colorChoices[index], RoundedCornerShape(8.dp))
+                                    .clickable { selectedItemForColor?.color?.value = colorChoices[index] }
+                            )
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 
