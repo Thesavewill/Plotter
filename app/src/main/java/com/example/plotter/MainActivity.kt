@@ -117,7 +117,7 @@ fun DrawScope.Fuction1(offsetX: Float, offsetY: Float, gridSize: Float, countSca
 
     val step = 1
     for (px in 0..size.width.toInt() step step) {
-        val x = (px - offsetX) / unitSize
+        val x = (px - offsetX) / unitSize / 4
 
         val y = try {
             expression.setVariable("x", x.toDouble()).evaluate().toFloat()
