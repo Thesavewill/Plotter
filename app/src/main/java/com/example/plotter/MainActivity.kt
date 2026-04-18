@@ -162,8 +162,8 @@ fun Greeting(modifier: Modifier = Modifier) {
     var offsetX by remember { mutableFloatStateOf(0f) }
     var offsetY by remember { mutableFloatStateOf(0f) }
     var gridSize by remember { mutableFloatStateOf(0f) }
-    var scale by remember { mutableStateOf(1f) }
-    var countScale by remember { mutableStateOf(0) }
+    var scale by remember { mutableFloatStateOf(1f) }
+    var countScale by remember { mutableIntStateOf(0) }
 
     val functionsList = remember { mutableStateListOf(FunctionItem()) }
 
