@@ -81,6 +81,12 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+//Класс для добавления графиков
+class FunctionItem(
+    var text: MutableState<String> = mutableStateOf(""),
+    var color: MutableState<Color> = mutableStateOf(Color.Blue)
+)
+
 // Тестовая функция
 val mySin = object : Function("mySin", 1) {
     override fun apply(vararg args: Double): Double {
