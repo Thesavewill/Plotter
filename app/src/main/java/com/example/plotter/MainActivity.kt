@@ -177,7 +177,10 @@ fun Greeting(modifier: Modifier = Modifier) {
     var scale by remember { mutableStateOf(1f) }
     var countScale by remember { mutableStateOf(0) }
 
-    var textState by remember { mutableStateOf("") }
+    val functionsList = remember { mutableStateListOf(FunctionItem()) }
+
+    var showColorPicker by remember { mutableStateOf(false) }
+    var selectedItemForColor by remember { mutableStateOf<FunctionItem?>(null) }
 
     if (scale >= 2f) {
         countScale++
