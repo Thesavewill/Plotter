@@ -248,6 +248,16 @@ fun Greeting(modifier: Modifier = Modifier) {
                 minorX += gridSize
             }
 
+
+            val textPaint = Paint().apply {
+                color = android.graphics.Color.GRAY
+                textSize = 30f
+                textAlign = Paint.Align.LEFT
+            }
+
+            // Коэффициент масштаба для значений
+            val unitFactor = 2f.pow(countScale.toFloat())
+
             //----------------Мажорные линии сетки--------------
             while (majorY < height) {                       //ГОРИЗОНТАЛЬНЫЕ МАЖОРНЫЕ ЛИНИИ
                 if (((majorY - offsetY) / gridSize).roundToInt() % 4f == 0f) {
