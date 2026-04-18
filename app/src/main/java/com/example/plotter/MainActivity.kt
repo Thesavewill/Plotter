@@ -334,6 +334,11 @@ fun Greeting(modifier: Modifier = Modifier) {
                     strokeWidth = lineWidth * 1.5f
                 )
             }
+
+            //----------------------------Отрисовка графика-----------------------------------
+            functionsList.forEach { item ->
+                CheckFunc(offsetX, offsetY, gridSize, countScale, item)
+            }
         }
 
         //========================ИНТЕРФЕЙС ВВОДА ФУНКЦИИ=================================
