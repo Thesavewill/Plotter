@@ -287,7 +287,8 @@ fun Greeting(modifier: Modifier = Modifier) {
                 majorY += gridSize
             }
             while (majorX < width) {                        //ВЕРТИКАЛЬНЫЕ МАЖОРНЫЕ ЛИНИИ
-                if (((majorX - offsetX) / gridSize).roundToInt() % 4f == 0f) {
+                val lineIndex = ((majorX - offsetX) / gridSize).roundToInt()
+                if (lineIndex % 4 == 0) {
                     drawLine(
                         color = lineColor2,
                         start = Offset(majorX, 0f),
