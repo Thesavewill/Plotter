@@ -97,7 +97,7 @@ val mySin = object : Function("mySin", 1) {
 // Список всех кастомных функций exp4j
 val customFunctions = listOf(mySin)
 
-fun DrawScope.Fuction1(offsetX: Float, offsetY: Float, gridSize: Float, countScale: Int, expressionString: String) {
+fun DrawScope.Fuction1(offsetX: Float, offsetY: Float, gridSize: Float, countScale: Int, expressionString: String, color: Color) {
     if (expressionString.isBlank()) return
 
     val unitSize = gridSize * 2f.pow(countScale.toFloat())
