@@ -154,9 +154,11 @@ fun DrawScope.Neravenstvo(offsetX: Float, offsetY: Float, gridSize: Float, count
 //fun DrawScope.Neravenstvo(offsetX: Float, offsetY: Float, gridSize: Float, countScale: Int, text: String, color: Color)
 
 // Определения вида функции
-fun DrawScope.CheckFunc(offsetX: Float, offsetY: Float, gridSize: Float, countScale: Int, text: String){
-    if (("<" in text) or ("=" in text) or (">" in text)){
-        Neravenstvo(offsetX, offsetY, gridSize, countScale, text)
+fun DrawScope.CheckFunc(offsetX: Float, offsetY: Float, gridSize: Float, countScale: Int, item: FunctionItem){
+    if (("<" in item.text.value) || ("=" in item.text.value) || (">" in item.text.value)){
+        //Neravenstvo(offsetX, offsetY, gridSize, countScale, text)
+    } else {
+        Fuction1(offsetX, offsetY, gridSize, countScale, item.text.value, item.color.value)
     }
     else {
         Fuction1(offsetX, offsetY, gridSize, countScale, text)
