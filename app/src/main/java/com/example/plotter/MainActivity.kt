@@ -345,15 +345,60 @@ fun Greeting(modifier: Modifier = Modifier) {
         Column(modifier = Modifier.fillMaxSize().padding(top = maxHeight / 2)) {
             Box(modifier = Modifier.fillMaxWidth().height(115.dp).background(Color.White).border(2.dp, lineColor3).padding(8.dp)) {
                 LazyColumn {
-                    item {
-                        OutlinedTextField(
-                            value = textState,
-                            onValueChange = { textState = it },
-                            modifier = Modifier.fillMaxSize(),
-                            singleLine = true,
-                            maxLines = 1,
-                            textStyle = androidx.compose.ui.text.TextStyle(fontSize = 18.sp)
-                        )
+                    items(functionsList.size) { index ->
+                        val item = functionsList[index]
+                        Row(Modifier.padding(bottom = 8.dp)){
+                            Column {
+                                Button(
+                                    onClick = { functionsList.removeAt(index) },
+                                    modifier = Modifier
+                                        .padding(end = 5.dp)
+                                        .size(20.dp),
+                                    shape = RoundedCornerShape(3.dp),
+                                    contentPadding = PaddingValues(0.dp),
+                                    colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Delete,
+                                        contentDescription = "Delete",
+                                        modifier = Modifier.size(16.dp)
+                                    )
+                                }
+                                Button(
+                                    onClick = {
+                                        selectedItemForColor = item
+                                        showColorPicker = true
+                                    },
+                                    modifier = Modifier
+                                        .padding(top = 5.dp, end = 8.dp)
+                                        .size(20.dp),
+                                    shape = RoundedCornerShape(3.dp),
+                                    contentPadding = PaddingValues(0.dp),
+                                    colors = ButtonDefaults.buttonColors(containerColor = item.color.value)
+                                ) {}
+                            }
+                            BasicTextField(
+                                value = item.text.value,
+                                onValueChange = { item.text.value = it },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(45.dp)
+                                    .background(Color.White.copy(alpha = 0.7f), RoundedCornerShape(4.dp))
+                                    .border(1.dp, Color.Gray, RoundedCornerShape(4.dp)),
+                                singleLine = true,
+                                decorationBox = { innerTextField ->
+                                    Box(
+                                        modifier = Modifier.padding(horizontal = 8.dp),
+                                        contentAlignment = Alignment.CenterStart
+                                    ) {
+                                        if (item.text.value.isEmpty()) {
+                                            Text("Поле ${index + 1}", color = Color.Gray)
+                                        }
+                                        innerTextField()
+                                    }
+                                }
+                            )
+                        }
                     }
                     item {
                         OutlinedTextField(
