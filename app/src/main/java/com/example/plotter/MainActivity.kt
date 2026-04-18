@@ -145,7 +145,7 @@ fun DrawScope.Fuction1(offsetX: Float, offsetY: Float, gridSize: Float, countSca
 
     drawPath(
         path = path,
-        color = Color.Blue,
+        color = color,
         style = Stroke(width = 4f)
     )
 }
