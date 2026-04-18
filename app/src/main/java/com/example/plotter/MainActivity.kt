@@ -342,19 +342,8 @@ fun Greeting(modifier: Modifier = Modifier) {
         }
 
         //========================ИНТЕРФЕЙС ВВОДА ФУНКЦИИ=================================
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(top = maxHeight / 2)
-        ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(75.dp)
-                    .background(Color.White)
-                    .border(2.dp, lineColor3)
-                    .padding(8.dp)
-            ) {
+        Column(modifier = Modifier.fillMaxSize().padding(top = maxHeight / 2)) {
+            Box(modifier = Modifier.fillMaxWidth().height(115.dp).background(Color.White).border(2.dp, lineColor3).padding(8.dp)) {
                 LazyColumn {
                     item {
                         OutlinedTextField(
