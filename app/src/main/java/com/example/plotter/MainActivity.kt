@@ -125,7 +125,7 @@ fun DrawScope.Fuction1(offsetX: Float, offsetY: Float, gridSize: Float, countSca
             Float.NaN
         }
 
-        val py = offsetY - y * unitSize
+        val py = offsetY - y * unitSize * 4
 
         if (py.isFinite()) {
             if (!started) {
