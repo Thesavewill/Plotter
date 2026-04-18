@@ -401,14 +401,29 @@ fun Greeting(modifier: Modifier = Modifier) {
                         }
                     }
                     item {
-                        OutlinedTextField(
-                            value = textState,
-                            onValueChange = { textState = it },
-                            modifier = Modifier.fillMaxSize(),
-                            singleLine = true,
-                            maxLines = 1,
-                            textStyle = androidx.compose.ui.text.TextStyle(fontSize = 18.sp)
-                        )
+                        Button(
+                            onClick = { functionsList.add(FunctionItem()) },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(42.dp),
+                            shape = RoundedCornerShape(5.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.primaryContainer,
+                                contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                            ),
+                            elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Add,
+                                contentDescription = null,
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Spacer(Modifier.width(8.dp))
+                            Text(
+                                text = "Добавить график",
+                                style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold)
+                            )
+                        }
                     }
                 }
             }
