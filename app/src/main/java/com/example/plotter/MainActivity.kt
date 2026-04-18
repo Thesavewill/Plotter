@@ -195,21 +195,18 @@ fun Greeting(modifier: Modifier = Modifier) {
     
     BoxWithConstraints(
         modifier = Modifier
-        .pointerInput(Unit) {                               //ДВИЖЕНИЕ СЕТКИ
-            detectDragGestures { change, dragAmount ->
-                change.consume()
-                offsetX += dragAmount.x
-                offsetY += dragAmount.y
+            .pointerInput(Unit) {
+                detectTransformGestures { centroid, pan, zoom, rotation ->
+                    offsetX += pan.x
+                    offsetY += pan.y
+                    if (zoom != 1f) {
+                        offsetX -= (centroid.x - offsetX) * (zoom - 1f)
+                        offsetY -= (centroid.y - offsetY) * (zoom - 1f)
+                    }
+                    gridSize *= zoom
+                    scale *= zoom
+                }
             }
-        }
-        .pointerInput(Unit) {                                //ЗУМ СЕТКИ
-            detectTransformGestures { centroid, pan, zoom, rotation ->
-                offsetX += pan.x
-                offsetY += pan.y
-                gridSize *= zoom
-                scale *= zoom
-            }
-        }
     ) {
         //ЦЕНТРИРУЕМ СЕТКУ 1 РАЗ
         if (offsetX == 0f && offsetY == 0f) {
