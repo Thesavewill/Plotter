@@ -268,6 +268,21 @@ fun Greeting(modifier: Modifier = Modifier) {
                         end = Offset(width, majorY),
                         strokeWidth = lineWidth
                     )
+
+                    val yValue = -(lineIndex.toFloat() / unitFactor) / 4
+                    val textToShow = if (countScale <= 0) {
+                        yValue.toInt()
+                    } else {
+                        yValue.toFloat()
+                    }
+                    if (yValue != 0f) {
+                        drawContext.canvas.nativeCanvas.drawText(
+                            textToShow.toString(),
+                            offsetX + 10f,
+                            majorY - 5f,
+                            textPaint
+                        )
+                    }
                 }
                 majorY += gridSize
             }
