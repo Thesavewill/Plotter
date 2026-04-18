@@ -419,7 +419,7 @@ fun Greeting(modifier: Modifier = Modifier) {
                     .border(2.dp, lineColor3)
             )
         }
-
+        /*
         //========================ОТЛАДКА=================================
         Column(modifier = Modifier.padding(top = 30.dp, start = 10.dp)) {
             Text(
