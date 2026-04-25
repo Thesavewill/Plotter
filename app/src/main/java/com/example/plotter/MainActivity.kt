@@ -343,7 +343,7 @@ fun Greeting(modifier: Modifier = Modifier) {
                                         modifier = Modifier.size(16.dp)
                                     )
                                 }
-                                Button(
+                                Button(                                           //Кнопка выбора цвета
                                     onClick = {
                                         selectedItemForColor = item
                                         showColorPicker = true
