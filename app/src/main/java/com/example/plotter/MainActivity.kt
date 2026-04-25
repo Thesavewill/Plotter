@@ -328,7 +328,7 @@ fun Greeting(modifier: Modifier = Modifier) {
                         val item = functionsList[index]
                         Row(Modifier.padding(bottom = 8.dp)){
                             Column {
-                                Button(
+                                Button(                                         //Кнопка удаления
                                     onClick = { functionsList.removeAt(index) },
                                     modifier = Modifier
                                         .padding(end = 5.dp)
