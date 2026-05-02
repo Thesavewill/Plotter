@@ -426,7 +426,87 @@ fun Greeting(modifier: Modifier = Modifier) {
                     .fillMaxSize()
                     .background(Color.White)
                     .border(2.dp, lineColor3)
-            )
+            ) {
+                Column {
+                    // Функция вставки текста
+                    val insertText: (String) -> Unit = { symbol ->
+                        selectedItem?.let { item ->
+                            val value = item.text.value
+                            val text = value.text
+                            val selection = value.selection
+                            val newText = text.replaceRange(selection.min, selection.max, symbol)
+
+                            // Если вставляем sin(), ставим курсор внутрь скобок
+                            val offset = if (symbol == "sin()") selection.min + 4 else selection.min + symbol.length
+
+                            item.text.value = TextFieldValue(
+                                text = newText,
+                                selection = TextRange(offset)
+                            )
+                        }
+                    }
+
+                    // Функция для удаления
+                    val deleteText: () -> Unit = {
+                        selectedItem?.let { item ->
+                            val value = item.text.value
+                            val text = value.text
+                            val selection = value.selection
+
+                            if (!selection.collapsed) {
+                                val newText = text.removeRange(selection.min, selection.max)
+                                item.text.value = TextFieldValue(newText, TextRange(selection.min))
+                            } else if (selection.min > 0) {
+                                val newText = text.removeRange(selection.min - 1, selection.min)
+                                item.text.value = TextFieldValue(newText, TextRange(selection.min - 1))
+                            }
+                        }
+                    }
+
+                    val keys = listOf("1", "2", "3", "*", "4", "5", "6", "+", "7", "8", "9", "-", "0", "sin()", "x", "⌫")
+
+                    LazyVerticalGrid(
+                        columns = GridCells.Fixed(4),
+                        contentPadding = PaddingValues(5.dp),
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        items(keys.size) { index ->
+                            val key = keys[index]
+
+                            Button(
+                                onClick = {
+                                    if (key == "⌫") deleteText() else insertText(key)
+                                },
+                                modifier = Modifier
+                                    .padding(4.dp)
+                                    .height(32.dp),
+                                contentPadding = PaddingValues(0.dp),
+                                shape = RoundedCornerShape(8.dp),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = when(key) {
+                                        "x" -> Color.Blue
+                                        "⌫" -> Color(0xFFE57373)
+                                        else -> Color.White
+                                    },
+                                    contentColor = if (key == "x" || key == "⌫") Color.White else Color.Black
+                                ),
+                                elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp),
+                            ) {
+                                Text(
+                                    text = key,
+                                    style = TextStyle(
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 13.sp,
+                                        textAlign = TextAlign.Center
+                                    ),
+                                    maxLines = 1,
+                                    softWrap = false
+                                )
+                            }
+                        }
+                    }
+                }
+            }
         }
         /*
         //========================ОТЛАДКА=================================
