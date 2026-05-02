@@ -407,6 +407,7 @@ fun Greeting(modifier: Modifier = Modifier) {
                     }
                 }
             }
+            //------------------------Нижняя панель--------------------------
             Box(
                 Modifier
                     .fillMaxSize()
