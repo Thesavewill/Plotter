@@ -104,7 +104,16 @@ fun DrawScope.Fuction1(offsetX: Float, offsetY: Float, gridSize: Float, countSca
     val path = Path()
     var started = false
 
-    val expression = ExpressionBuilder(expressionString).variable("x").functions(customFunctions).build() ?: return
+    val expression = try {
+        ExpressionBuilder(expressionString)
+            .variable("x")
+            .functions(customFunctions)
+            .build()
+    } catch (e: Exception) {
+        null
+    }
+
+    if (expression == null) return
 
     val step = 1
     for (px in 0..size.width.toInt() step step) {
