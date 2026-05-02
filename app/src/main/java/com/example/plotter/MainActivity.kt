@@ -509,7 +509,7 @@ fun Greeting(modifier: Modifier = Modifier) {
             }
         }
         /*
-        //========================ОТЛАДКА=================================
+        //=======================================ОТЛАДКА=====================================
         Column(modifier = Modifier.padding(top = 30.dp, start = 10.dp)) {
             Text(
                 text = "$scale",
