@@ -377,7 +377,12 @@ fun Greeting(modifier: Modifier = Modifier) {
                                     .fillMaxWidth()
                                     .height(45.dp)
                                     .background(Color.White.copy(alpha = 0.7f), RoundedCornerShape(4.dp))
-                                    .border(1.dp, Color.Gray, RoundedCornerShape(4.dp)),
+                                    .border(1.dp, Color.Gray, RoundedCornerShape(4.dp))
+                                    .onFocusChanged { focusState ->
+                                        if (focusState.isFocused) {
+                                            selectedItem = item
+                                        }
+                                    },
                                 singleLine = true,
                                 decorationBox = { innerTextField ->
                                     Box(
