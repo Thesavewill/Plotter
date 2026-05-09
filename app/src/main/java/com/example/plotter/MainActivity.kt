@@ -157,7 +157,7 @@ fun DrawScope.CheckFunc(offsetX: Float, offsetY: Float, gridSize: Float, countSc
     if (("<" in item.text.value.text) || ("=" in item.text.value.text) || (">" in item.text.value.text)){
         //Neravenstvo(offsetX, offsetY, gridSize, countScale, text)
     } else {
-        Fuction1(offsetX, offsetY, gridSize, countScale, item.text.value, item.color.value)
+        Fuction1(offsetX, offsetY, gridSize, countScale, item.text.value.text, item.color.value)
     }
 }
 
