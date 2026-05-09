@@ -83,7 +83,7 @@ class MainActivity : ComponentActivity() {
 
 //Класс для добавления графиков
 class FunctionItem(
-    var text: MutableState<String> = mutableStateOf(""),
+    var text: MutableState<TextFieldValue> = mutableStateOf(TextFieldValue("")),
     var color: MutableState<Color> = mutableStateOf(Color.Blue)
 )
 
