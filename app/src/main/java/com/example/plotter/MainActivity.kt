@@ -372,7 +372,9 @@ fun Greeting(modifier: Modifier = Modifier) {
                             }
                             BasicTextField(
                                 value = item.text.value,
-                                onValueChange = { item.text.value = it },
+                                onValueChange = {
+                                    item.text.value = it
+                                    selectedItem = item },
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .height(45.dp)
