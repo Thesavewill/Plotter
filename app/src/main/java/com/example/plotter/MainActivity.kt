@@ -175,6 +175,8 @@ fun Greeting(modifier: Modifier = Modifier) {
 
     val functionsList = remember { mutableStateListOf(FunctionItem()) }
 
+    var selectedItem by remember { mutableStateOf<FunctionItem?>(null) }
+
     var showColorPicker by remember { mutableStateOf(false) }
     var selectedItemForColor by remember { mutableStateOf<FunctionItem?>(null) }
 
