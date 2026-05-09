@@ -391,7 +391,7 @@ fun Greeting(modifier: Modifier = Modifier) {
                                         modifier = Modifier.padding(horizontal = 8.dp),
                                         contentAlignment = Alignment.CenterStart
                                     ) {
-                                        if (item.text.value.isEmpty()) {
+                                        if (item.text.value.text.isEmpty()) {
                                             Text("Поле ${index + 1}", color = Color.Gray)
                                         }
                                         innerTextField()
