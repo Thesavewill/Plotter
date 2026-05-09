@@ -395,10 +395,11 @@ fun Greeting(modifier: Modifier = Modifier) {
                     }
                     item {
                         Button(
-                            onClick = { functionsList.add(FunctionItem()) },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(42.dp),
+                            onClick = {
+                                val newItem = FunctionItem()
+                                functionsList.add(newItem)
+                                selectedItem = newItem },
+                                modifier = Modifier.fillMaxWidth().height(42.dp),
                             shape = RoundedCornerShape(5.dp),
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = MaterialTheme.colorScheme.primaryContainer,
