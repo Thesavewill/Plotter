@@ -71,17 +71,17 @@ fun PlotterScreenPreview() {
             )
         }
 
-        // ========== Обработчик интентов ==========
-        val handleIntent: (PlotterContract.Intent) -> Unit = let@{ intent ->
-            when (intent) {
-                // === Ввод текста ===
-                is PlotterContract.Intent.UpdateExpression -> {
-                    previewState.value = previewState.value.copy(
-                        functions = previewState.value.functions.map { func ->
-                            if (func.id == intent.id) func.copy(expression = intent.value) else func
-                        }
-                    )
+        AlertDialog.Builder(context)
+            .setTitle("Откуда добавить уравнение?")
+            .setItems(options) { _, which ->
+                when (which) {
+                    0 -> requestCameraPermission() // Камера
+                    1 -> requestStoragePermission() // Галерея
                 }
+            }
+            .setNegativeButton("Отмена", null)
+            .show()
+    }
 
                 // === Выбор функции ===
                 is PlotterContract.Intent.SelectFunction -> {
