@@ -57,26 +57,19 @@ class MainActivity : ComponentActivity() {
             .show()
     }
 
-                // === Выбор функции ===
-                is PlotterContract.Intent.SelectFunction -> {
-                    previewState.value = previewState.value.copy(selectedFunctionId = intent.id)
-                }
-
-                // === Вставка символа с клавиатуры ===
-                is PlotterContract.Intent.InsertSymbol -> {
-                    val selectedId = previewState.value.selectedFunctionId ?: return@let
-                    previewState.value = previewState.value.copy(
-                        functions = previewState.value.functions.map { func ->
-                            if (func.id != selectedId) return@map func
-                            val value = func.expression
-                            val text = value.text
-                            val selection = value.selection
-                            val newText = text.replaceRange(selection.min, selection.max, intent.symbol)
-                            val offset = if (intent.symbol == "sin()") selection.min + 4 else selection.min + intent.symbol.length
-                            func.copy(expression = TextFieldValue(newText, TextRange(offset)))
-                        }
-                    )
-                }
+    // Проверка и запрос прав для Камеры
+    private fun requestCameraPermission() {
+        when {
+            ContextCompat.checkSelfPermission(
+                this, Manifest.permission.CAMERA
+            ) == PackageManager.PERMISSION_GRANTED -> {
+                cameraLauncher.launch(null)
+            }
+            else -> {
+                cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
+            }
+        }
+    }
 
                 // === Удаление символа ===
                 PlotterContract.Intent.DeleteSymbol -> {
