@@ -45,9 +45,12 @@ fun PlotterScreen(
                 KeyboardPanel(
                     onIntent = onIntent,
                     modifier = Modifier
-                        .weight(0.65f)
-                        .fillMaxWidth()
-                )
+                        .fillMaxSize()
+                        .background(Color.Black.copy(alpha = 0.3f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator(color = Color.White)
+                }
             }
 
             // Диалог цвета
