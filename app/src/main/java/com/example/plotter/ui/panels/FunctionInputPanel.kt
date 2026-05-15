@@ -46,18 +46,44 @@ fun FunctionInputPanel(
                 )
             }
             item {
-                Button(
-                    onClick = { onIntent(PlotterContract.Intent.AddFunction()) },
-                    modifier = Modifier.fillMaxWidth().height(42.dp),
-                    shape = RoundedCornerShape(5.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.primaryContainer,
-                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                    )
-                ) {
-                    Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(20.dp))
-                    Spacer(Modifier.width(8.dp))
-                    Text("Добавить график", style = MaterialTheme.typography.labelLarge)
+                Row (
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ){
+                    Button(
+                        onClick = { onIntent(PlotterContract.Intent.AddFunction()) },
+                        modifier = Modifier.weight(1f).height(42.dp),
+                        shape = RoundedCornerShape(5.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.primaryContainer,
+                            contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                    ) {
+                        Icon(
+                            Icons.Default.Add,
+                            contentDescription = null,
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Spacer(Modifier.width(8.dp))
+                        Text("Добавить график", style = MaterialTheme.typography.labelLarge)
+                    }
+                    Button(
+                        onClick = onImageCaptureRequested,
+                        modifier = Modifier.weight(1f).height(42.dp),
+                        shape = RoundedCornerShape(5.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFF4CAF50),
+                            contentColor = Color.White
+                        )
+                    ) {
+                        Icon(
+                            Icons.Default.AddCircle,
+                            contentDescription = "Распознать с фото",
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Spacer(Modifier.width(4.dp))
+                        Text("С фото", style = MaterialTheme.typography.labelLarge)
+                    }
                 }
             }
         }
