@@ -79,28 +79,13 @@ class MainActivity : ComponentActivity() {
             Manifest.permission.READ_EXTERNAL_STORAGE
         }
 
-                // === Изменить цвет ===
-                is PlotterContract.Intent.ChangeColor -> {
-                    previewState.value = previewState.value.copy(
-                        functions = previewState.value.functions.map { func ->
-                            if (func.id == intent.id) func.copy(color = intent.color) else func
-                        }
-                    )
-                }
-
-                // === Зум/пан ===
-                is PlotterContract.Intent.Pan,
-                is PlotterContract.Intent.Zoom,
-                is PlotterContract.Intent.CanvasInitialized -> {
-                }
+        when {
+            ContextCompat.checkSelfPermission(this, permission) == PackageManager.PERMISSION_GRANTED -> {
+                imagePickerLauncher.launch("image/*")
+            }
+            else -> {
+                storagePermissionLauncher.launch(permission)
             }
         }
-
-        // ========== Рендер экрана с интерактивным состоянием ==========
-        PlotterScreen(
-            state = previewState.value,
-            onIntent = handleIntent,
-            modifier = Modifier.fillMaxSize()
-        )
     }
 }
