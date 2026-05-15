@@ -1,27 +1,47 @@
 package com.example.plotter.viewmodel
 
+import android.content.Context
+import android.graphics.Bitmap
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewModelScope
+import com.example.plotter.domain.evaluator.ExpressionEvaluator
 import com.example.plotter.domain.model.CanvasTransform
 import com.example.plotter.domain.model.PlotFunction
+import com.example.plotter.domain.recognition.ImageRecognizer
 import com.example.plotter.ui.PlotterContract
 import com.example.plotter.ui.PlotterContract.Intent
 import com.example.plotter.ui.PlotterContract.State
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.flow.update
-import android.util.Log
 
-class PlotterViewModel : ViewModel() {
+class PlotterViewModel(
+    private val appContext: Context,
+    private val imageRecognizer: ImageRecognizer = ImageRecognizer
+) : ViewModel() {
 
     private val _state = MutableStateFlow(State())
     val state: StateFlow<State> = _state.asStateFlow()
 
+    private val _imageRecognitionEvents = Channel<ImageRecognitionEvent>(Channel.BUFFERED)
+    val imageRecognitionEvents: Flow<ImageRecognitionEvent> = _imageRecognitionEvents.receiveAsFlow()
+
+    private var recognitionJob: Job? = null
+
     fun handleIntent(intent: Intent) {
-        Log.d("MVI_DEBUG", "Intent received: $intent")
         when (intent) {
             is Intent.Pan -> updateCanvas { it.copy(offsetX = it.offsetX + intent.dx, offsetY = it.offsetY + intent.dy) }
             is Intent.Zoom -> handleZoom(intent.factor, intent.centerX, intent.centerY)
@@ -37,8 +57,28 @@ class PlotterViewModel : ViewModel() {
             Intent.CloseColorPicker -> _state.update {
                 it.copy(colorPicker = PlotterContract.ColorPickerState())
             }
+            Intent.OpenImageSourceDialog -> {
+                viewModelScope.launch {
+                    _imageRecognitionEvents.send(ImageRecognitionEvent.RequestPermission)
+                }
+            }
             is Intent.InsertSymbol -> insertSymbol(intent.symbol)
             Intent.DeleteSymbol -> deleteSymbol()
+            Intent.RequestImageCapture -> {
+                viewModelScope.launch {
+                    _imageRecognitionEvents.send(ImageRecognitionEvent.RequestPermission)
+                }
+            }
+            is Intent.ProcessImageUri -> {
+                processImageRecognition {
+                    imageRecognizer.recognizeFromUri(appContext, android.net.Uri.parse(intent.uri))
+                }
+            }
+            is Intent.ProcessImageBitmap -> {
+                processImageRecognition {
+                    imageRecognizer.recognizeFromBitmap(intent.bitmap)
+                }
+            }
         }
     }
 
@@ -143,9 +183,11 @@ class PlotterViewModel : ViewModel() {
                     val text = value.text
                     val selection = value.selection
                     val newText = text.replaceRange(selection.min, selection.max, symbol)
-                    var offset = if (symbol == "sin()" || symbol == "cos()" || symbol == "ctg()") selection.min + 4 else selection.min + symbol.length
-                    if (symbol == "tg()") offset = selection.min + 3 else selection.min + symbol.length
-
+                    val offset = when (symbol) {
+                        "sin()", "cos()", "ctg()" -> selection.min + 4
+                        "tg()" -> selection.min + 3
+                        else -> selection.min + symbol.length
+                    }
                     func.copy(expression = TextFieldValue(newText, TextRange(offset)))
                 }
             )
@@ -177,4 +219,82 @@ class PlotterViewModel : ViewModel() {
     private fun updateCanvas(update: (CanvasTransform) -> CanvasTransform) {
         _state.update { it.copy(canvas = update(it.canvas)) }
     }
+
+    private fun processImageRecognition(recognize: suspend () -> String?) {
+        recognitionJob?.cancel()
+        recognitionJob = viewModelScope.launch {
+            _state.update { it.copy(isProcessingImage = true) }
+            try {
+                val rawText = withContext(Dispatchers.IO) { recognize() }
+                if (rawText != null && rawText.isNotBlank()) {
+                    val equation = ImageRecognizer.preprocessEquation(rawText)
+                    if (isValidEquation(equation)) {
+                        addFunctionWithExpression(equation)
+                        _imageRecognitionEvents.send(ImageRecognitionEvent.ShowSuccess)
+                    } else {
+                        _imageRecognitionEvents.send(ImageRecognitionEvent.ShowError("Распознанный текст не похож на уравнение"))
+                    }
+                } else {
+                    _imageRecognitionEvents.send(ImageRecognitionEvent.ShowError("Не удалось распознать текст на изображении"))
+                }
+            } catch (e: Exception) {
+                _imageRecognitionEvents.send(ImageRecognitionEvent.ShowError("Ошибка распознавания: ${e.localizedMessage}"))
+            } finally {
+                _state.update { it.copy(isProcessingImage = false) }
+                _imageRecognitionEvents.send(ImageRecognitionEvent.DismissLoading)
+            }
+        }
+    }
+
+    private fun addFunctionWithExpression(expression: String) {
+        _state.update { state ->
+            val newFunc = PlotFunction(
+                expression = TextFieldValue(expression),
+                color = generateDistinctColor(state.functions.map { it.color })
+            )
+            state.copy(
+                functions = state.functions + newFunc,
+                selectedFunctionId = newFunc.id
+            )
+        }
+    }
+
+    private fun isValidEquation(expr: String): Boolean {
+        if (expr.length > 200) return false
+        return expr.matches(Regex("^[a-zA-Z0-9+\\-*/^().,\\s]+$"))
+    }
+
+    private fun generateDistinctColor(usedColors: List<Color>): Color {
+        val candidates = listOf(
+            Color.Red, Color.Blue, Color.Green, Color.Magenta,
+            Color.Cyan, Color(0xFFFF9800), Color(0xFF9C27B0), Color(0xFF4CAF50)
+        )
+        val usedArgb = usedColors.map { it.toArgb() }.toSet()
+        return candidates.firstOrNull { it.toArgb() !in usedArgb } ?: Color.Blue
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        recognitionJob?.cancel()
+        ExpressionEvaluator.clearCache()
+    }
+
+    companion object {
+        class Factory(private val context: Context) : ViewModelProvider.Factory {
+            @Suppress("UNCHECKED_CAST")
+            override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                if (modelClass.isAssignableFrom(PlotterViewModel::class.java)) {
+                    return PlotterViewModel(context.applicationContext) as T
+                }
+                throw IllegalArgumentException("Unknown ViewModel class")
+            }
+        }
+    }
+}
+
+sealed class ImageRecognitionEvent {
+    data object RequestPermission : ImageRecognitionEvent()
+    data class ShowError(val message: String) : ImageRecognitionEvent()
+    data object ShowSuccess : ImageRecognitionEvent()
+    data object DismissLoading : ImageRecognitionEvent()
 }
