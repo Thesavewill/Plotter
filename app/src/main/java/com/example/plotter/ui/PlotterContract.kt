@@ -33,5 +33,9 @@ object PlotterContract {
         data object CloseColorPicker : Intent
         data class InsertSymbol(val symbol: String) : Intent
         data object DeleteSymbol : Intent
+        data object RequestImageCapture : Intent
+        data class ProcessImageUri(val uri: String) : Intent
+        data class ProcessImageBitmap(val bitmap: android.graphics.Bitmap) : Intent
+        data object OpenImageSourceDialog : Intent
     }
 }
