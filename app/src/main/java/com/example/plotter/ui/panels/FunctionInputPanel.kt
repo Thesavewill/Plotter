@@ -26,6 +26,7 @@ fun FunctionInputPanel(
     selectedId: String?,
     colorPickerState: PlotterContract.ColorPickerState,
     onIntent: (PlotterContract.Intent) -> Unit,
+    onImageCaptureRequested: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Box(
