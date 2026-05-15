@@ -2,12 +2,7 @@ package com.example.plotter.ui.panels
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.BoxWithConstraints
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -17,6 +12,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -33,7 +29,7 @@ fun KeyboardPanel(
     BoxWithConstraints(
         modifier = modifier
             .fillMaxSize()
-            .background(Color.White)
+            .background(Color(0xFFF5F5F5))
             .border(2.dp, Color.Black)
     ) {
         val buttonHeight = maxHeight / 4f
@@ -58,23 +54,40 @@ fun KeyboardPanel(
                     modifier = Modifier
                         .padding(2.dp)
                         .height(buttonHeight)
-                        .fillMaxWidth(),
+                        .fillMaxWidth()
+                        .shadow(
+                            elevation = 4.dp,
+                            shape = RoundedCornerShape(8.dp),
+                            ambientColor = Color.Black.copy(alpha = 0.2f),
+                            spotColor = Color.Black.copy(alpha = 0.4f)
+                        ),
                     contentPadding = PaddingValues(0.dp),
                     shape = RoundedCornerShape(8.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = when (key) {
-                            "x" -> Color.Blue
+                            "x" -> Color(0xFF2196F3)
                             "⌫" -> Color(0xFFE57373)
+                            "sin()", "cos()", "tg()", "ctg()" -> Color(0xFFE3F2FD)
+                            "*", "/", "+", "-" -> Color(0xFFFFF9C4)
                             else -> Color.White
                         },
-                        contentColor = if (key == "x" || key == "⌫") Color.White else Color.Black
+                        contentColor = when (key) {
+                            "x", "⌫" -> Color.White
+                            "sin()", "cos()", "tg()", "ctg()" -> Color(0xFF1976D2)
+                            "*", "/", "+", "-" -> Color(0xFF5D4037)
+                            else -> Color.Black
+                        }
+                    ),
+                    elevation = ButtonDefaults.buttonElevation(
+                        defaultElevation = 0.dp,
+                        pressedElevation = 0.dp
                     )
                 ) {
                     Text(
                         text = key,
                         style = TextStyle(
                             fontWeight = FontWeight.Bold,
-                            fontSize = 14.sp,
+                            fontSize = 13.sp,
                             textAlign = TextAlign.Center
                         ),
                         maxLines = 1,
