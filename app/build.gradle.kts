@@ -58,4 +58,6 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
     implementation("net.objecthunter:exp4j:0.4.8")
+    implementation("com.google.mlkit:text-recognition:16.0.1")
+    implementation("com.google.accompanist:accompanist-permissions:0.32.0")
 }
