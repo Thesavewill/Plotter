@@ -1,14 +1,17 @@
 package com.example.plotter.ui
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import com.example.plotter.ui.canvas.CanvasPlot
 import com.example.plotter.ui.panels.ColorPickerDialog
 import com.example.plotter.ui.panels.FunctionInputPanel
@@ -18,10 +21,12 @@ import com.example.plotter.ui.panels.KeyboardPanel
 fun PlotterScreen(
     state: PlotterContract.State,
     onIntent: (PlotterContract.Intent) -> Unit,
+    onImageCaptureRequested: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Scaffold(modifier = modifier.fillMaxSize()) { innerPadding ->
-        Box(modifier = Modifier.padding(innerPadding)) {
+        Box(modifier = Modifier.padding(innerPadding).fillMaxSize()) {
+            // График на заднем плане
             CanvasPlot(
                 state = state.canvas,
                 functions = state.functions,
@@ -29,21 +34,28 @@ fun PlotterScreen(
                 modifier = Modifier.fillMaxSize()
             )
 
+            // Панели поверх графика
             Column(modifier = Modifier.fillMaxSize()) {
-                Spacer(modifier = Modifier.weight(1f))
+                Spacer(modifier = Modifier.weight(3f))
 
                 FunctionInputPanel(
                     functions = state.functions,
                     selectedId = state.selectedFunctionId,
                     colorPickerState = state.colorPicker,
                     onIntent = onIntent,
-                    modifier = Modifier
-                        .weight(0.35f)
-                        .fillMaxWidth()
+                    onImageCaptureRequested = onImageCaptureRequested,
+                    modifier = Modifier.weight(1f)
                 )
 
                 KeyboardPanel(
                     onIntent = onIntent,
+                    modifier = Modifier.weight(2f)
+                )
+            }
+
+            // Индикатор загрузки при обработке изображения
+            if (state.isProcessingImage) {
+                Box(
                     modifier = Modifier
                         .fillMaxSize()
                         .background(Color.Black.copy(alpha = 0.3f)),
@@ -53,7 +65,7 @@ fun PlotterScreen(
                 }
             }
 
-            // Диалог цвета
+            // Диалог выбора цвета
             if (state.colorPicker.isVisible) {
                 ColorPickerDialog(
                     onColorSelected = { color ->

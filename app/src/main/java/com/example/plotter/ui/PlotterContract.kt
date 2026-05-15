@@ -12,7 +12,8 @@ object PlotterContract {
         val functions: List<PlotFunction> = listOf(PlotFunction()),
         val selectedFunctionId: String? = null,
         val colorPicker: ColorPickerState = ColorPickerState(),
-        val error: String? = null
+        val error: String? = null,
+        val isProcessingImage: Boolean = false
     )
 
     data class ColorPickerState(
