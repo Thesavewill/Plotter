@@ -71,61 +71,13 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-                // === Удаление символа ===
-                PlotterContract.Intent.DeleteSymbol -> {
-                    val selectedId = previewState.value.selectedFunctionId ?: return@let
-                    previewState.value = previewState.value.copy(
-                        functions = previewState.value.functions.map { func ->
-                            if (func.id != selectedId) return@map func
-                            val value = func.expression
-                            val text = value.text
-                            val selection = value.selection
-                            val (newText, newSelection) = if (!selection.collapsed) {
-                                text.removeRange(selection.min, selection.max) to selection.min
-                            } else if (selection.min > 0) {
-                                text.removeRange(selection.min - 1, selection.min) to selection.min - 1
-                            } else {
-                                text to selection.min
-                            }
-                            func.copy(expression = TextFieldValue(newText, TextRange(newSelection)))
-                        }
-                    )
-                }
-
-                // === Добавить функцию ===
-                is PlotterContract.Intent.AddFunction -> {
-                    val newFunc = PlotFunction()
-                    previewState.value = previewState.value.copy(
-                        functions = previewState.value.functions + newFunc,
-                        selectedFunctionId = newFunc.id
-                    )
-                }
-
-                // === Удалить функцию ===
-                is PlotterContract.Intent.RemoveFunction -> {
-                    val newList = previewState.value.functions.filter { it.id != intent.id }
-                    previewState.value = previewState.value.copy(
-                        functions = if (newList.isEmpty()) listOf(PlotFunction()) else newList,
-                        selectedFunctionId = if (previewState.value.selectedFunctionId == intent.id) null else previewState.value.selectedFunctionId
-                    )
-                }
-
-                // === Открыть выбор цвета ===
-                is PlotterContract.Intent.OpenColorPicker -> {
-                    previewState.value = previewState.value.copy(
-                        colorPicker = PlotterContract.ColorPickerState(
-                            isVisible = true,
-                            targetFunctionId = intent.functionId
-                        )
-                    )
-                }
-
-                // === Закрыть выбор цвета ===
-                PlotterContract.Intent.CloseColorPicker -> {
-                    previewState.value = previewState.value.copy(
-                        colorPicker = PlotterContract.ColorPickerState()
-                    )
-                }
+    // Проверка и запрос прав для Галереи
+    private fun requestStoragePermission() {
+        val permission = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            Manifest.permission.READ_MEDIA_IMAGES
+        } else {
+            Manifest.permission.READ_EXTERNAL_STORAGE
+        }
 
                 // === Изменить цвет ===
                 is PlotterContract.Intent.ChangeColor -> {
