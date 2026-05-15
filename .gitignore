@@ -13,3 +13,13 @@
 .externalNativeBuild
 .cxx
 local.properties
+.idea/
+*.ipr
+*.iws
+build/
+*/build/
+.gradle/
+*.jks
+*.keystore
+# Logs
+*.log
