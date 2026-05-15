@@ -42,35 +42,9 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-@Preview(
-    showSystemUi = true,
-    showBackground = true,
-    device = "spec:width=720px,height=1680px,dpi=440",
-    name = "Plotter - Interactive"
-)
-@Composable
-fun PlotterScreenPreview() {
-    PlotterTheme {
-        // ========== Локальное состояние ==========
-        val previewState = remember {
-            mutableStateOf(
-                PlotterContract.State(
-                    canvas = CanvasTransform(
-                        offsetX = 360f,
-                        offsetY = 420f,
-                        gridSize = 36f,
-                        scale = 1f,
-                        countScale = 0,
-                        canvasWidth = 720f,
-                        canvasHeight = 1680f,
-                        isInitialized = true
-                    ),
-                    functions = listOf(),
-                    selectedFunctionId = null
-                )
-            )
-        }
-
+    // Диалог выбора: Камера или Галерея
+    private fun showImageSourceDialog(context: android.content.Context) {
+        val options = arrayOf("📷 Сделать фото", "🖼 Выбрать из галереи")
         AlertDialog.Builder(context)
             .setTitle("Откуда добавить уравнение?")
             .setItems(options) { _, which ->
