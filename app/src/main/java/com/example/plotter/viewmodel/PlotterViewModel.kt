@@ -27,6 +27,7 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.flow.update
+import androidx.core.net.toUri
 
 class PlotterViewModel(
     private val appContext: Context,
@@ -71,7 +72,7 @@ class PlotterViewModel(
             }
             is Intent.ProcessImageUri -> {
                 processImageRecognition {
-                    imageRecognizer.recognizeFromUri(appContext, android.net.Uri.parse(intent.uri))
+                    imageRecognizer.recognizeFromUri(appContext, intent.uri.toUri())
                 }
             }
             is Intent.ProcessImageBitmap -> {
@@ -147,7 +148,7 @@ class PlotterViewModel(
         _state.update { state ->
             val newList = state.functions.filter { it.id != id }
             state.copy(
-                functions = if (newList.isEmpty()) listOf(PlotFunction()) else newList,
+                functions = newList.ifEmpty { listOf(PlotFunction()) },
                 selectedFunctionId = if (state.selectedFunctionId == id) null else state.selectedFunctionId
             )
         }
@@ -185,7 +186,7 @@ class PlotterViewModel(
                     val newText = text.replaceRange(selection.min, selection.max, symbol)
                     val offset = when (symbol) {
                         "sin()", "cos()", "ctg()" -> selection.min + 4
-                        "tg()" -> selection.min + 3
+                        "tg()", "sh()", "ch()", "th()" -> selection.min + 3
                         else -> selection.min + symbol.length
                     }
                     func.copy(expression = TextFieldValue(newText, TextRange(offset)))
