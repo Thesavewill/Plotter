@@ -36,7 +36,7 @@ fun PlotterScreen(
 
             // Панели поверх графика
             Column(modifier = Modifier.fillMaxSize()) {
-                Spacer(modifier = Modifier.weight(3f))
+                Spacer(modifier = Modifier.weight(6.5f))
 
                 FunctionInputPanel(
                     functions = state.functions,
@@ -44,12 +44,12 @@ fun PlotterScreen(
                     colorPickerState = state.colorPicker,
                     onIntent = onIntent,
                     onImageCaptureRequested = onImageCaptureRequested,
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.weight(2.5f)
                 )
 
                 KeyboardPanel(
                     onIntent = onIntent,
-                    modifier = Modifier.weight(2f)
+                    modifier = Modifier.weight(6f)
                 )
             }
 
