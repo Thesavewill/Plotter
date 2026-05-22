@@ -22,12 +22,12 @@ import com.example.plotter.ui.PlotterContract
 fun AccountButton(
     userEmail: String?,
     onIntent: (PlotterContract.Intent) -> Unit,
+    onSignInClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     var showMenu by remember { mutableStateOf(false) }
 
     Box(modifier = modifier) {
-        // Кнопка аккаунта
         Row(
             modifier = Modifier
                 .clip(CircleShape)
@@ -52,7 +52,6 @@ fun AccountButton(
             }
         }
 
-        // Выпадающее меню
         DropdownMenu(
             expanded = showMenu,
             onDismissRequest = { showMenu = false }
@@ -83,7 +82,7 @@ fun AccountButton(
                 DropdownMenuItem(
                     text = { Text("Войти через Google") },
                     onClick = {
-                        onIntent(PlotterContract.Intent.ToggleSignIn)
+                        onSignInClick()
                         showMenu = false
                     }
                 )

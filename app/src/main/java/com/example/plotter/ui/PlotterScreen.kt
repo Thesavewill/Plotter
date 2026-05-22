@@ -54,6 +54,7 @@ fun PlotterScreen(
             AccountButton(
                 userEmail = state.currentUserEmail,
                 onIntent = onIntent,
+                onSignInClick = onSignInRequested,
                 modifier = Modifier
                     .align(Alignment.TopEnd)
                     .padding(32.dp)

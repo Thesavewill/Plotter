@@ -71,13 +71,6 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-            .requestIdToken("885514888340-6pauo0d34odk6ts9ga79os8fko9vm6ki.apps.googleusercontent.com")
-            .requestEmail()
-            .build()
-
-        val client = GoogleSignIn.getClient(this, gso)
         enableEdgeToEdge()
         setContent {
             PlotterTheme {
