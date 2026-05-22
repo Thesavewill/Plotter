@@ -12,26 +12,18 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.TextRange
-import androidx.compose.ui.text.input.TextFieldValue
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.content.ContextCompat
-import com.example.plotter.domain.model.CanvasTransform
-import com.example.plotter.domain.model.PlotFunction
 import com.example.plotter.ui.PlotterContract
 import com.example.plotter.ui.PlotterScreen
 import com.example.plotter.ui.theme.PlotterTheme
 import com.example.plotter.viewmodel.ImageRecognitionEvent
 import com.example.plotter.viewmodel.PlotterViewModel
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import kotlinx.coroutines.flow.collectLatest
 
 class MainActivity : ComponentActivity() {
@@ -41,7 +33,6 @@ class MainActivity : ComponentActivity() {
         )
     }
 
-    //  Лаунчер камеры
     private val cameraLauncher = registerForActivityResult(
         ActivityResultContracts.TakePicturePreview()
     ) { bitmap: Bitmap? ->
@@ -50,7 +41,6 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    // Лаунчер галереи
     private val imagePickerLauncher = registerForActivityResult(
         ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
@@ -59,7 +49,6 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    // Лаунчер прав на камеру
     private val cameraPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { isGranted ->
@@ -70,7 +59,6 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    // Лаунчер прав на галерею
     private val storagePermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { isGranted ->
@@ -83,6 +71,13 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+            .requestIdToken("885514888340-6pauo0d34odk6ts9ga79os8fko9vm6ki.apps.googleusercontent.com")
+            .requestEmail()
+            .build()
+
+        val client = GoogleSignIn.getClient(this, gso)
         enableEdgeToEdge()
         setContent {
             PlotterTheme {
@@ -92,7 +87,6 @@ class MainActivity : ComponentActivity() {
                 LaunchedEffect(Unit) {
                     viewModel.imageRecognitionEvents.collectLatest { event ->
                         when (event) {
-                            // Показ выбора при нажатии кнопки "С фото"
                             ImageRecognitionEvent.RequestPermission -> {
                                 showImageSourceDialog(context)
                             }
@@ -113,28 +107,26 @@ class MainActivity : ComponentActivity() {
                     onImageCaptureRequested = {
                         viewModel.handleIntent(PlotterContract.Intent.OpenImageSourceDialog)
                     },
-                    modifier = Modifier
+                    onSignInRequested = { signInWithGoogle() }
                 )
             }
         }
     }
 
-    // Диалог выбора: Камера или Галерея
     private fun showImageSourceDialog(context: android.content.Context) {
         val options = arrayOf("📷 Сделать фото", "🖼 Выбрать из галереи")
         AlertDialog.Builder(context)
             .setTitle("Откуда добавить уравнение?")
             .setItems(options) { _, which ->
                 when (which) {
-                    0 -> requestCameraPermission() // Камера
-                    1 -> requestStoragePermission() // Галерея
+                    0 -> requestCameraPermission()
+                    1 -> requestStoragePermission()
                 }
             }
             .setNegativeButton("Отмена", null)
             .show()
     }
 
-    // Проверка и запрос прав для Камеры
     private fun requestCameraPermission() {
         when {
             ContextCompat.checkSelfPermission(
@@ -148,7 +140,6 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    // Проверка и запрос прав для Галереи
     private fun requestStoragePermission() {
         val permission = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
             Manifest.permission.READ_MEDIA_IMAGES
@@ -164,5 +155,42 @@ class MainActivity : ComponentActivity() {
                 storagePermissionLauncher.launch(permission)
             }
         }
+    }
+
+    private val googleSignInLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
+
+        if (task.isSuccessful) {
+            val account = task.result
+            account.idToken?.let { token ->
+                viewModel.handleIntent(PlotterContract.Intent.ProcessGoogleSignIn(token))
+            } ?: run {
+                Toast.makeText(this, "Ошибка: нет токена", Toast.LENGTH_LONG).show()
+            }
+        } else {
+            val e = task.exception
+            val message = when (e) {
+                is com.google.android.gms.common.api.ApiException -> {
+                    when (e.statusCode) {
+                        10 -> "Неверный Web Client ID или SHA-1"
+                        12500 -> "Пользователь отменил вход"
+                        else -> "Ошибка ${e.statusCode}: ${e.localizedMessage}"
+                    }
+                }
+                else -> "Неизвестная ошибка: ${e?.localizedMessage}"
+            }
+            Toast.makeText(this, message, Toast.LENGTH_LONG).show()
+        }
+    }
+
+    private fun signInWithGoogle() {
+        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+            .requestIdToken("885514888340-6pauo0d34odk6ts9ga79os8fko9vm6ki.apps.googleusercontent.com")
+            .requestEmail()
+            .build()
+        val googleSignInClient = GoogleSignIn.getClient(this, gso)
+        googleSignInLauncher.launch(googleSignInClient.signInIntent)
     }
 }
