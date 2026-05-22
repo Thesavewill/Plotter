@@ -7,6 +7,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AddCircle
@@ -17,6 +19,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.example.plotter.domain.model.PlotFunction
 import com.example.plotter.ui.PlotterContract
@@ -99,6 +104,7 @@ private fun FunctionRow(
     onIntent: (PlotterContract.Intent) -> Unit,
     onColorClick: () -> Unit
 ) {
+    val keyboardController = LocalSoftwareKeyboardController.current
     Row(
         modifier = Modifier.padding(bottom = 8.dp),
         verticalAlignment = Alignment.CenterVertically
@@ -124,6 +130,8 @@ private fun FunctionRow(
         BasicTextField(
             value = item.expression,
             onValueChange = { onIntent(PlotterContract.Intent.UpdateExpression(item.id, it)) },
+            singleLine = true,
+
             modifier = Modifier
                 .fillMaxWidth()
                 .height(45.dp)
@@ -132,11 +140,15 @@ private fun FunctionRow(
                 .onFocusChanged { focusState ->
                     if (focusState.isFocused) {
                         onIntent(PlotterContract.Intent.SelectFunction(item.id))
+                        keyboardController?.hide()
                     }
                 },
-            singleLine = true,
+
             decorationBox = { innerTextField ->
-                Box(modifier = Modifier.padding(horizontal = 8.dp), contentAlignment = Alignment.CenterStart) {
+                Box(
+                    modifier = Modifier.padding(horizontal = 8.dp),
+                    contentAlignment = Alignment.CenterStart
+                ) {
                     if (item.expression.text.isEmpty()) {
                         Text("Поле", color = Color.Gray)
                     }
