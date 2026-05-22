@@ -28,6 +28,13 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.flow.update
 import androidx.core.net.toUri
+import com.example.plotter.data.auth.AuthManager
+import com.example.plotter.data.repository.GraphRepository
+import com.example.plotter.domain.model.SavedGraph
+import com.example.plotter.domain.model.toCanvasTransform
+import com.example.plotter.domain.model.toCanvasTransformData
+import com.example.plotter.domain.model.toPlotFunction
+import com.example.plotter.domain.model.toSavedFunction
 
 class PlotterViewModel(
     private val appContext: Context,
@@ -38,13 +45,20 @@ class PlotterViewModel(
     val state: StateFlow<State> = _state.asStateFlow()
 
     private val _imageRecognitionEvents = Channel<ImageRecognitionEvent>(Channel.BUFFERED)
-    val imageRecognitionEvents: Flow<ImageRecognitionEvent> = _imageRecognitionEvents.receiveAsFlow()
+    val imageRecognitionEvents: Flow<ImageRecognitionEvent> =
+        _imageRecognitionEvents.receiveAsFlow()
 
     private var recognitionJob: Job? = null
 
     fun handleIntent(intent: Intent) {
         when (intent) {
-            is Intent.Pan -> updateCanvas { it.copy(offsetX = it.offsetX + intent.dx, offsetY = it.offsetY + intent.dy) }
+            is Intent.Pan -> updateCanvas {
+                it.copy(
+                    offsetX = it.offsetX + intent.dx,
+                    offsetY = it.offsetY + intent.dy
+                )
+            }
+
             is Intent.Zoom -> handleZoom(intent.factor, intent.centerX, intent.centerY)
             is Intent.CanvasInitialized -> handleCanvasInit(intent.width, intent.height)
             is Intent.AddFunction -> addFunction(intent.position)
@@ -53,16 +67,24 @@ class PlotterViewModel(
             is Intent.SelectFunction -> _state.update { it.copy(selectedFunctionId = intent.id) }
             is Intent.ChangeColor -> changeColor(intent.id, intent.color)
             is Intent.OpenColorPicker -> _state.update {
-                it.copy(colorPicker = PlotterContract.ColorPickerState(isVisible = true, targetFunctionId = intent.functionId))
+                it.copy(
+                    colorPicker = PlotterContract.ColorPickerState(
+                        isVisible = true,
+                        targetFunctionId = intent.functionId
+                    )
+                )
             }
+
             Intent.CloseColorPicker -> _state.update {
                 it.copy(colorPicker = PlotterContract.ColorPickerState())
             }
+
             Intent.OpenImageSourceDialog -> {
                 viewModelScope.launch {
                     _imageRecognitionEvents.send(ImageRecognitionEvent.RequestPermission)
                 }
             }
+
             is Intent.InsertSymbol -> insertSymbol(intent.symbol)
             Intent.DeleteSymbol -> deleteSymbol()
             Intent.RequestImageCapture -> {
@@ -70,17 +92,57 @@ class PlotterViewModel(
                     _imageRecognitionEvents.send(ImageRecognitionEvent.RequestPermission)
                 }
             }
+
             is Intent.ProcessImageUri -> {
                 processImageRecognition {
                     imageRecognizer.recognizeFromUri(appContext, intent.uri.toUri())
                 }
             }
+
             is Intent.ProcessImageBitmap -> {
                 processImageRecognition {
                     imageRecognizer.recognizeFromBitmap(intent.bitmap)
                 }
             }
+
+            is Intent.ProcessGoogleSignIn -> {
+                viewModelScope.launch {
+                    val result = AuthManager.signInWithGoogle(intent.idToken)
+                    result.onSuccess { user ->
+                        _state.update { it.copy(currentUserEmail = user.email) }
+                    }
+                    result.onFailure { error ->
+                        _imageRecognitionEvents.send(
+                            ImageRecognitionEvent.ShowError("Ошибка входа: ${error.localizedMessage}")
+                        )
+                    }
+                }
+            }
+
+            Intent.SaveGraph -> saveCurrentGraph()
+            Intent.ShowSavedGraphs -> loadUserGraphs()
+            is Intent.LoadGraph -> loadGraph(intent.graphId)
+            is Intent.DeleteGraph -> deleteGraph(intent.graphId)
+            Intent.SignOut -> {
+                AuthManager.signOut()
+                _state.update { it.copy(currentUserEmail = null) }
+            }
+
+            is Intent.UpdateGraphName -> _state.update { it.copy(graphName = intent.name) }
+            Intent.CloseSaveDialog -> _state.update {
+                it.copy(
+                    showSaveDialog = false,
+                    graphName = ""
+                )
+            }
+
+            Intent.CloseGraphsList -> _state.update { it.copy(showGraphsList = false) }
+            else -> {
+            }
         }
+    }
+    init {
+        _state.update { it.copy(currentUserEmail = AuthManager.currentUserEmail) }
     }
 
     private fun handleZoom(factor: Float, centerX: Float, centerY: Float) {
@@ -289,6 +351,64 @@ class PlotterViewModel(
                 }
                 throw IllegalArgumentException("Unknown ViewModel class")
             }
+        }
+    }
+
+    private fun saveCurrentGraph() {
+        viewModelScope.launch {
+            val ownerId = AuthManager.currentUser?.uid ?: return@launch
+            val graph = SavedGraph(
+                name = _state.value.graphName.ifEmpty { "График ${System.currentTimeMillis()}" },
+                functions = _state.value.functions.map { it.toSavedFunction() },
+                canvasTransform = _state.value.canvas.toCanvasTransformData(),
+                ownerId = ownerId,
+                createdAt = System.currentTimeMillis()
+            )
+            GraphRepository.saveGraph(graph).onSuccess {
+                _state.update { it.copy(showSaveDialog = false, graphName = "") }
+            }
+        }
+    }
+
+    private fun loadUserGraphs() {
+        viewModelScope.launch {
+            _state.update { it.copy(isLoadingGraphs = true, showGraphsList = true) }
+
+            val result = GraphRepository.getUserGraphs()
+            result.onSuccess { graphs ->
+                _state.update { it.copy(savedGraphs = graphs, isLoadingGraphs = false) }
+            }
+            result.onFailure { error ->
+                _state.update { it.copy(isLoadingGraphs = false, error = error.localizedMessage) }
+            }
+        }
+    }
+
+    private fun loadGraph(graphId: String) {
+        viewModelScope.launch {
+            _state.update { it.copy(isLoadingGraphs = true) }
+
+            val result = GraphRepository.loadGraph(graphId)
+            result.onSuccess { graph ->
+                _state.update {
+                    it.copy(
+                        functions = graph.functions.map { sf -> sf.toPlotFunction() },
+                        canvas = graph.canvasTransform.toCanvasTransform(),
+                        selectedFunctionId = graph.functions.firstOrNull()?.id,
+                        showGraphsList = false,
+                        isLoadingGraphs = false
+                    )
+                }
+            }.onFailure {
+                _state.update { it.copy(isLoadingGraphs = false) }
+            }
+        }
+    }
+
+    private fun deleteGraph(graphId: String) {
+        viewModelScope.launch {
+            GraphRepository.deleteGraph(graphId)
+            loadUserGraphs()
         }
     }
 }
