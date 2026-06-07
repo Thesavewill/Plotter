@@ -1,23 +1,24 @@
 package com.example.plotter.ui.components
 
-import androidx.compose.foundation.border
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountCircle
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.Icon
-import androidx.compose.material3.Text
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.example.plotter.ui.PlotterContract
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AccountButton(
     userEmail: String?,
@@ -28,63 +29,160 @@ fun AccountButton(
     var showMenu by remember { mutableStateOf(false) }
 
     Box(modifier = modifier) {
-        Row(
-            modifier = Modifier
-                .clip(CircleShape)
-                .border(1.dp, Color.Gray, CircleShape)
-                .clickable { showMenu = true }
-                .padding(horizontal = 12.dp, vertical = 8.dp),
-            verticalAlignment = Alignment.CenterVertically
+        // Кнопка аккаунта
+        Surface(
+            onClick = { showMenu = true },
+            shape = CircleShape,
+            color = MaterialTheme.colorScheme.surfaceVariant,
+            modifier = Modifier.size(48.dp)
         ) {
-            Icon(
-                imageVector = Icons.Default.AccountCircle,
-                contentDescription = "Account",
-                modifier = Modifier.size(24.dp),
-                tint = if (userEmail != null) Color.Blue else Color.Gray
-            )
-
-            if (userEmail != null) {
-                Text(
-                    text = userEmail.substringBefore("@"),
-                    modifier = Modifier.padding(start = 8.dp),
-                    color = Color.Black
+            Box(contentAlignment = Alignment.Center) {
+                Icon(
+                    imageVector = Icons.Default.AccountCircle,
+                    contentDescription = "Account",
+                    tint = if (userEmail != null)
+                        MaterialTheme.colorScheme.primary
+                    else
+                        MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(32.dp)
                 )
             }
         }
 
+        // Выпадающее меню
         DropdownMenu(
             expanded = showMenu,
-            onDismissRequest = { showMenu = false }
+            onDismissRequest = { showMenu = false },
+            modifier = Modifier
+                .width(280.dp)
+                .clip(RoundedCornerShape(12.dp))
         ) {
+            // Заголовок с email
+            if (userEmail != null) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(MaterialTheme.colorScheme.surfaceVariant)
+                        .padding(horizontal = 16.dp, vertical = 12.dp)
+                ) {
+                    Text(
+                        text = "Аккаунт",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                        fontWeight = FontWeight.Medium
+                    )
+                    Text(
+                        text = "test@gmail.com",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        fontWeight = FontWeight.SemiBold,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+
+                HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+            }
+
+            // Элементы меню
             if (userEmail != null) {
                 DropdownMenuItem(
-                    text = { Text("Сохранить график") },
+                    text = {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            Text("Сохранить график")
+                        }
+                    },
                     onClick = {
                         onIntent(PlotterContract.Intent.SaveGraph)
                         showMenu = false
+                    },
+                    leadingIcon = {
+                        Icon(
+                            Icons.Default.Save,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                     }
                 )
+
                 DropdownMenuItem(
-                    text = { Text("Мои графики") },
+                    text = {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            Text("Мои графики")
+                        }
+                    },
                     onClick = {
                         onIntent(PlotterContract.Intent.ShowSavedGraphs)
                         showMenu = false
+                    },
+                    leadingIcon = {
+                        Icon(
+                            Icons.Default.FolderOpen,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                     }
                 )
+
+                HorizontalDivider()
+
                 DropdownMenuItem(
-                    text = { Text("Выйти") },
+                    text = {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            Text("Выйти", color = MaterialTheme.colorScheme.error)
+                        }
+                    },
                     onClick = {
                         onIntent(PlotterContract.Intent.SignOut)
                         showMenu = false
+                    },
+                    leadingIcon = {
+                        Icon(
+                            Icons.Default.Logout,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.error
+                        )
                     }
                 )
             } else {
                 DropdownMenuItem(
-                    text = { Text("Войти через Google") },
+                    text = {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            Icon(
+                                Icons.Default.Login,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Text("Войти через Google")
+                        }
+                    },
                     onClick = {
                         onSignInClick()
                         showMenu = false
-                    }
+                    },
+                    leadingIcon = {
+                        Icon(
+                            imageVector = Icons.Default.Login,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    },
+                    modifier = Modifier.background(
+                        MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
+                    )
                 )
             }
         }

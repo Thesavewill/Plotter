@@ -78,7 +78,6 @@ private fun DrawScope.drawFunction(canvasState: CanvasTransform, function: PlotF
     val step = 1
     for (px in 0..size.width.toInt() step step) {
         val x = (px - canvasState.offsetX) / unitSize / 4
-
         val y = try {
             compiledExpression.setVariable("x", x.toDouble()).evaluate().toFloat()
         } catch (e: Exception) {

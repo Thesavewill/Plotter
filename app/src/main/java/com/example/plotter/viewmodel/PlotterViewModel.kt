@@ -35,6 +35,7 @@ import com.example.plotter.domain.model.toCanvasTransform
 import com.example.plotter.domain.model.toCanvasTransformData
 import com.example.plotter.domain.model.toPlotFunction
 import com.example.plotter.domain.model.toSavedFunction
+import com.example.plotter.ui.theme.AppColors
 
 class PlotterViewModel(
     private val appContext: Context,
@@ -328,12 +329,8 @@ class PlotterViewModel(
     }
 
     private fun generateDistinctColor(usedColors: List<Color>): Color {
-        val candidates = listOf(
-            Color.Red, Color.Blue, Color.Green, Color.Magenta,
-            Color.Cyan, Color(0xFFFF9800), Color(0xFF9C27B0), Color(0xFF4CAF50)
-        )
-        val usedArgb = usedColors.map { it.toArgb() }.toSet()
-        return candidates.firstOrNull { it.toArgb() !in usedArgb } ?: Color.Blue
+        val usedArgb = usedColors.map { it.value.toInt() }.toSet()
+        return AppColors.GraphDistinctColors.firstOrNull { it.value.toInt() !in usedArgb } ?: AppColors.GraphDefaultBlue
     }
 
     override fun onCleared() {

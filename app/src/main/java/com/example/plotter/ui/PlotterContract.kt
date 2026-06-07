@@ -49,7 +49,6 @@ object PlotterContract {
         data class LoadGraph(val graphId: String) : Intent
         data object ShowSavedGraphs : Intent
         data class DeleteGraph(val graphId: String) : Intent
-        data object ToggleSignIn : Intent
         data object SignOut : Intent
         data class ProcessGoogleSignIn(val idToken: String) : Intent
         data class UpdateGraphName(val name: String) : Intent
