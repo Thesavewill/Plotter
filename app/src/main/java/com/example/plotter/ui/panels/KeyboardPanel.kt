@@ -115,12 +115,10 @@ fun KeyboardPanel(
                             contentColor = AppColors.KeyboardDigitText
                         )
 
-                        // Комбинированная кнопка x / y
-                        CombinedKeyButtonVertical(
-                            leftText = "x",
-                            rightText = "y",
-                            leftOnClick = { onIntent(PlotterContract.Intent.InsertSymbol("x")) },
-                            rightOnClick = { onIntent(PlotterContract.Intent.InsertSymbol("y")) },
+                        // Кнопка x
+                        KeyButton(
+                            text = "x",
+                            onClick = { onIntent(PlotterContract.Intent.InsertSymbol("x")) },
                             width = buttonWidth,
                             height = buttonHeight,
                             containerColor = AppColors.KeyboardVariableBg,
@@ -146,7 +144,7 @@ fun KeyboardPanel(
                         fontSize = 14.sp
                     )
 
-                    // Комбинированная кнопка * / /
+                    // Комбинированная кнопка * и /
                     CombinedKeyButtonVertical(
                         leftText = "*",
                         rightText = "/",
@@ -159,7 +157,7 @@ fun KeyboardPanel(
                         verticalPadding = 20.dp
                     )
 
-                    // Комбинированная кнопка + / -
+                    // Комбинированная кнопка + и -
                     CombinedKeyButtonVertical(
                         leftText = "+",
                         rightText = "-",

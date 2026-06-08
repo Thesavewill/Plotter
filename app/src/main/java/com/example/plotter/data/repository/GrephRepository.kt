@@ -51,4 +51,16 @@ object GraphRepository {
         db.collection(COLLECTION).document(graphId).delete().await()
         Result.success(Unit)
     } catch (e: Exception) { Result.failure(e) }
+
+    suspend fun renameGraph(graphId: String, newName: String): Result<Unit> = try {
+        db.collection(COLLECTION).document(graphId).update(
+            mapOf(
+                "name" to newName,
+                "updatedAt" to System.currentTimeMillis()
+            )
+        ).await()
+        Result.success(Unit)
+    } catch (e: Exception) {
+        Result.failure(e)
+    }
 }

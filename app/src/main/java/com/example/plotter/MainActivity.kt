@@ -120,7 +120,7 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun showImageSourceDialog(context: android.content.Context) {
-        val options = arrayOf("📷 Сделать фото", "🖼 Выбрать из галереи")
+        val options = arrayOf("Сделать фото", "Выбрать из галереи")
         AlertDialog.Builder(context)
             .setTitle("Откуда добавить уравнение?")
             .setItems(options) { _, which ->

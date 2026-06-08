@@ -147,6 +147,13 @@ class PlotterViewModel(
                 )
             }
 
+            is Intent.RequestRenameGraph -> _state.update {
+                it.copy(showRenameDialog = true, renameGraphId = intent.graphId, renameGraphName = intent.currentName)
+            }
+            is Intent.UpdateRenameName -> _state.update { it.copy(renameGraphName = intent.name) }
+            Intent.ConfirmRename -> confirmRename()
+            Intent.CloseRenameDialog -> _state.update { it.copy(showRenameDialog = false, renameGraphId = null, renameGraphName = "") }
+
             Intent.CloseGraphsList -> _state.update { it.copy(showGraphsList = false) }
             else -> {
             }
@@ -364,15 +371,26 @@ class PlotterViewModel(
     private fun saveCurrentGraph() {
         viewModelScope.launch {
             val ownerId = AuthManager.currentUser?.uid ?: return@launch
+            val timestamp = System.currentTimeMillis()
             val graph = SavedGraph(
-                name = _state.value.graphName.ifEmpty { "График ${System.currentTimeMillis()}" },
+                name = _state.value.graphName.ifEmpty { "График $timestamp" },
                 functions = _state.value.functions.map { it.toSavedFunction() },
                 canvasTransform = _state.value.canvas.toCanvasTransformData(),
                 ownerId = ownerId,
-                createdAt = System.currentTimeMillis()
+                createdAt = timestamp,
+                updatedAt = timestamp
             )
-            GraphRepository.saveGraph(graph).onSuccess {
-                _state.update { it.copy(showSaveDialog = false, graphName = "") }
+
+            GraphRepository.saveGraph(graph).onSuccess { newId ->
+                val savedGraph = graph.copy(id = newId)
+                _state.update { state ->
+                    state.copy(
+                        showSaveDialog = false,
+                        graphName = "",
+                        savedGraphs = listOf(savedGraph) + state.savedGraphs
+                    )
+                }
+                _imageRecognitionEvents.send(ImageRecognitionEvent.ShowSuccess)
             }
         }
     }
@@ -414,8 +432,49 @@ class PlotterViewModel(
 
     private fun deleteGraph(graphId: String) {
         viewModelScope.launch {
-            GraphRepository.deleteGraph(graphId)
-            loadUserGraphs()
+            _state.update { state ->
+                state.copy(savedGraphs = state.savedGraphs.filter { it.id != graphId })
+            }
+            GraphRepository.deleteGraph(graphId).onFailure { e ->
+                loadUserGraphs()
+                _imageRecognitionEvents.send(
+                    ImageRecognitionEvent.ShowError("Ошибка удаления: ${e.localizedMessage}")
+                )
+            }
+        }
+    }
+
+    private fun confirmRename() {
+        val graphId = _state.value.renameGraphId ?: return
+        val newName = _state.value.renameGraphName.trim()
+
+        if (newName.isBlank()) {
+            viewModelScope.launch {
+                _imageRecognitionEvents.send(
+                    ImageRecognitionEvent.ShowError("Имя не может быть пустым")
+                )
+            }
+            return
+        }
+        viewModelScope.launch {
+            _state.update { state ->
+                state.copy(
+                    showRenameDialog = false,
+                    renameGraphId = null,
+                    renameGraphName = "",
+                    savedGraphs = state.savedGraphs.map { graph ->
+                        if (graph.id == graphId) {
+                            graph.copy(name = newName, updatedAt = System.currentTimeMillis())
+                        } else graph
+                    }
+                )
+            }
+            GraphRepository.renameGraph(graphId, newName).onFailure { e ->
+                loadUserGraphs()
+                _imageRecognitionEvents.send(
+                    ImageRecognitionEvent.ShowError("Ошибка: ${e.localizedMessage}")
+                )
+            }
         }
     }
 

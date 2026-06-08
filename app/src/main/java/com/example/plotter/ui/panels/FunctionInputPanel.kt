@@ -37,7 +37,7 @@ fun FunctionInputPanel(
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .heightIn(min = 140.dp, max = 300.dp), // Гибкая высота вместо жёсткой 115.dp
+            .heightIn(min = 140.dp, max = 300.dp),
         shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
@@ -71,7 +71,6 @@ fun FunctionInputPanel(
             }
 
             // Кнопки действий
-            // Добавьте кнопку в раздел кнопок действий:
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -89,7 +88,7 @@ fun FunctionInputPanel(
                     Text("Добавить")
                 }
 
-                // Новая кнопка для рукописного ввода
+                // Кнопка для рукописного ввода
                 IconButton(
                     onClick = { onIntent(PlotterContract.Intent.OpenHandwritingMode) },
                     modifier = Modifier

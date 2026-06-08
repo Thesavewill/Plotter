@@ -23,7 +23,10 @@ object PlotterContract {
         val showGraphsList: Boolean = false,
         val graphName: String = "",
         val isHandwritingMode: Boolean = false,
-        val handwritingBitmap: android.graphics.Bitmap? = null
+        val handwritingBitmap: android.graphics.Bitmap? = null,
+        val showRenameDialog: Boolean = false,
+        val renameGraphId: String? = null,
+        val renameGraphName: String = ""
     )
 
     data class ColorPickerState(
@@ -57,10 +60,12 @@ object PlotterContract {
         data class UpdateGraphName(val name: String) : Intent
         data object CloseSaveDialog : Intent
         data object CloseGraphsList : Intent
-        data class InsertHandwritingSymbol(val symbol: String): Intent
         data object OpenHandwritingMode: Intent
         data object CloseHandwritingMode: Intent
-        data class ProcessHandwritingBitmap(val bitmap: android.graphics.Bitmap): Intent
         data class ProcessHandwritingInk(val ink: com.google.mlkit.vision.digitalink.Ink) : Intent
+        data class RequestRenameGraph(val graphId: String, val currentName: String) : Intent
+        data class UpdateRenameName(val name: String) : Intent
+        object ConfirmRename : Intent
+        object CloseRenameDialog : Intent
     }
 }

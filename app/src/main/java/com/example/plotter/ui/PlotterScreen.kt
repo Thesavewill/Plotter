@@ -42,7 +42,7 @@ fun PlotterScreen(
 ) {
     Scaffold(modifier = modifier.fillMaxSize(), contentWindowInsets = WindowInsets(0, 0, 0, 0), containerColor = AppColors.White) { innerPadding ->
         Box(modifier = Modifier.padding(innerPadding).fillMaxSize().navigationBarsPadding()) {
-            // График на заднем плане
+            // График
             CanvasPlot(state = state.canvas, functions = state.functions, onIntent = onIntent, modifier = Modifier.fillMaxSize())
 
             // Кнопка аккаунта
@@ -115,7 +115,12 @@ fun PlotterScreen(
                                 else -> {
                                     LazyColumn(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                                         items(state.savedGraphs, key = { it.id }) { graph ->
-                                            SavedGraphItem(graph = graph, onLoadClick = { onIntent(PlotterContract.Intent.LoadGraph(graph.id)) }, onDeleteClick = { onIntent(PlotterContract.Intent.DeleteGraph(graph.id)) })
+                                            SavedGraphItem(
+                                                graph = graph,
+                                                onLoadClick = { onIntent(PlotterContract.Intent.LoadGraph(graph.id)) },
+                                                onDeleteClick = { onIntent(PlotterContract.Intent.DeleteGraph(graph.id)) },
+                                                onRenameClick = { onIntent(PlotterContract.Intent.RequestRenameGraph(graph.id, graph.name)) }
+                                            )
                                         }
                                         item { Spacer(modifier = Modifier.height(8.dp)) }
                                     }
@@ -133,16 +138,56 @@ fun PlotterScreen(
             }
         }
     }
+    if (state.showRenameDialog) {
+        AlertDialog(
+            onDismissRequest = { onIntent(PlotterContract.Intent.CloseRenameDialog) },
+            title = { Text("Переименовать график") },
+            text = {
+                OutlinedTextField(
+                    value = state.renameGraphName,
+                    onValueChange = { onIntent(PlotterContract.Intent.UpdateRenameName(it)) },
+                    label = { Text("Новое имя") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = { onIntent(PlotterContract.Intent.ConfirmRename) }) { Text("Сохранить") }
+            },
+            dismissButton = {
+                TextButton(onClick = { onIntent(PlotterContract.Intent.CloseRenameDialog) }) { Text("Отмена") }
+            }
+        )
+    }
 }
 
 @Composable
-private fun SavedGraphItem(graph: SavedGraph, onLoadClick: () -> Unit, onDeleteClick: () -> Unit) {
+private fun SavedGraphItem(graph: SavedGraph, onLoadClick: () -> Unit, onDeleteClick: () -> Unit, onRenameClick: () -> Unit ) {
     val formattedDate = remember(graph.updatedAt) { java.text.SimpleDateFormat("dd.MM.yyyy HH:mm", java.util.Locale.getDefault()).format(java.util.Date(graph.updatedAt)) }
     Card(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(16.dp), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant), onClick = onLoadClick) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.Top) {
                 Column(modifier = Modifier.weight(1f)) {
-                    Text(text = graph.name, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.clickable(onClick = onRenameClick)
+                    ) {
+                        Text(
+                            text = graph.name,
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.SemiBold,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.weight(1f, fill = false)
+                        )
+                        Icon(
+                            Icons.Default.Edit,
+                            contentDescription = "Переименовать",
+                            modifier = Modifier.size(18.dp).padding(start = 4.dp),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                        )
+                    }
                     Spacer(modifier = Modifier.height(4.dp))
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(Icons.Default.Schedule, contentDescription = null, modifier = Modifier.size(14.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f))
