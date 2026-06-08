@@ -17,6 +17,8 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.lifecycleScope
+import com.example.plotter.domain.recognition.HandwritingRecognizer
 import com.example.plotter.ui.PlotterContract
 import com.example.plotter.ui.PlotterScreen
 import com.example.plotter.ui.theme.PlotterTheme
@@ -25,6 +27,7 @@ import com.example.plotter.viewmodel.PlotterViewModel
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     private val viewModel: PlotterViewModel by viewModels {
@@ -102,6 +105,16 @@ class MainActivity : ComponentActivity() {
                     },
                     onSignInRequested = { signInWithGoogle() }
                 )
+            }
+        }
+
+        lifecycleScope.launch {
+            try {
+                if (!HandwritingRecognizer.isModelDownloaded()) {
+                    HandwritingRecognizer.downloadModel()
+                }
+            } catch (e: Exception) {
+                android.util.Log.e("Handwriting", "Failed to preload model: ${e.localizedMessage}")
             }
         }
     }

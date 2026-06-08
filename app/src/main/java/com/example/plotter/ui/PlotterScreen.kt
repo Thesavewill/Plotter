@@ -24,10 +24,12 @@ import com.example.plotter.domain.model.PlotFunction
 import com.example.plotter.domain.model.SavedGraph
 import com.example.plotter.ui.canvas.CanvasPlot
 import com.example.plotter.ui.components.AccountButton
+import com.example.plotter.ui.components.InkCanvas
 import com.example.plotter.ui.panels.ColorPickerDialog
 import com.example.plotter.ui.panels.FunctionInputPanel
 import com.example.plotter.ui.panels.KeyboardPanel
 import com.example.plotter.ui.theme.AppColors
+import com.google.mlkit.vision.digitalink.Ink
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -40,24 +42,56 @@ fun PlotterScreen(
 ) {
     Scaffold(modifier = modifier.fillMaxSize(), contentWindowInsets = WindowInsets(0, 0, 0, 0), containerColor = AppColors.White) { innerPadding ->
         Box(modifier = Modifier.padding(innerPadding).fillMaxSize().navigationBarsPadding()) {
+            // График на заднем плане
             CanvasPlot(state = state.canvas, functions = state.functions, onIntent = onIntent, modifier = Modifier.fillMaxSize())
 
+            // Кнопка аккаунта
             AccountButton(userEmail = state.currentUserEmail, onIntent = onIntent, onSignInClick = onSignInRequested, modifier = Modifier.align(Alignment.TopEnd).padding(top = 48.dp, end = 16.dp))
 
-            Column(modifier = Modifier.fillMaxSize().imePadding()) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .imePadding()
+            ) {
                 Spacer(modifier = Modifier.weight(1f))
-                FunctionInputPanel(functions = state.functions, selectedId = state.selectedFunctionId, colorPickerState = state.colorPicker, onIntent = onIntent, onImageCaptureRequested = onImageCaptureRequested, modifier = Modifier.weight(0.4f))
-                KeyboardPanel(onIntent = onIntent, modifier = Modifier.weight(0.5f))
+
+                FunctionInputPanel(
+                    functions = state.functions,
+                    selectedId = state.selectedFunctionId,
+                    colorPickerState = state.colorPicker,
+                    onIntent = onIntent,
+                    onImageCaptureRequested = onImageCaptureRequested,
+                    modifier = Modifier.weight(0.4f)
+                )
+
+                // Переключение между клавиатурой и рукописным вводом
+                if (state.isHandwritingMode) {
+                    InkCanvas(
+                        onRecognize = { ink ->
+                            onIntent(PlotterContract.Intent.ProcessHandwritingInk(ink))
+                        },
+                        onDismiss = { onIntent(PlotterContract.Intent.CloseHandwritingMode) },
+                        modifier = Modifier.weight(0.5f)
+                    )
+                } else {
+                    KeyboardPanel(
+                        onIntent = onIntent,
+                        modifier = Modifier.weight(0.5f)
+                    )
+                }
             }
 
+            // Индикатор загрузки
             if (state.isProcessingImage) {
                 Box(modifier = Modifier.fillMaxSize().background(AppColors.LoadingDim), contentAlignment = Alignment.Center) { CircularProgressIndicator(color = AppColors.White) }
             }
 
+            // Диалог выбора цвета
             if (state.colorPicker.isVisible) {
                 ColorPickerDialog(onColorSelected = { color -> state.colorPicker.targetFunctionId?.let { id -> onIntent(PlotterContract.Intent.ChangeColor(id, color)) }; onIntent(PlotterContract.Intent.CloseColorPicker) }, onDismiss = { onIntent(PlotterContract.Intent.CloseColorPicker) })
             }
 
+            // Диалог списка сохранённых графиков
             if (state.showGraphsList) {
                 Box(modifier = Modifier.fillMaxSize().background(AppColors.DialogDim).clickable(onClick = { onIntent(PlotterContract.Intent.CloseGraphsList) })) {
                     Card(modifier = Modifier.align(Alignment.Center).fillMaxWidth(0.92f).heightIn(min = 400.dp, max = 520.dp), shape = RoundedCornerShape(24.dp), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface), elevation = CardDefaults.cardElevation(defaultElevation = 12.dp)) {

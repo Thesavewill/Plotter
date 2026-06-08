@@ -76,4 +76,8 @@ dependencies {
 
     implementation("androidx.compose.material:material-icons-core")
     implementation("androidx.compose.material:material-icons-extended")
+
+    implementation("com.google.mlkit:common:18.7.0")
+    implementation("com.google.mlkit:digital-ink-recognition:18.1.0")
+    implementation(platform("androidx.compose:compose-bom:2024.09.00"))
 }

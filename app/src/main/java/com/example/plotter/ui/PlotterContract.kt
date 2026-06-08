@@ -5,6 +5,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import com.example.plotter.domain.model.CanvasTransform
 import com.example.plotter.domain.model.PlotFunction
 import com.example.plotter.domain.model.SavedGraph
+import com.example.plotter.domain.recognition.HandwritingRecognizer
 
 object PlotterContract {
 
@@ -20,7 +21,9 @@ object PlotterContract {
         val currentUserEmail: String? = null,
         val showSaveDialog: Boolean = false,
         val showGraphsList: Boolean = false,
-        val graphName: String = ""
+        val graphName: String = "",
+        val isHandwritingMode: Boolean = false,
+        val handwritingBitmap: android.graphics.Bitmap? = null
     )
 
     data class ColorPickerState(
@@ -54,5 +57,10 @@ object PlotterContract {
         data class UpdateGraphName(val name: String) : Intent
         data object CloseSaveDialog : Intent
         data object CloseGraphsList : Intent
+        data class InsertHandwritingSymbol(val symbol: String): Intent
+        data object OpenHandwritingMode: Intent
+        data object CloseHandwritingMode: Intent
+        data class ProcessHandwritingBitmap(val bitmap: android.graphics.Bitmap): Intent
+        data class ProcessHandwritingInk(val ink: com.google.mlkit.vision.digitalink.Ink) : Intent
     }
 }

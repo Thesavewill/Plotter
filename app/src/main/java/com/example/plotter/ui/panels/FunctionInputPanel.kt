@@ -13,6 +13,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -70,6 +71,7 @@ fun FunctionInputPanel(
             }
 
             // Кнопки действий
+            // Добавьте кнопку в раздел кнопок действий:
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -86,6 +88,21 @@ fun FunctionInputPanel(
                     Spacer(Modifier.width(4.dp))
                     Text("Добавить")
                 }
+
+                // Новая кнопка для рукописного ввода
+                IconButton(
+                    onClick = { onIntent(PlotterContract.Intent.OpenHandwritingMode) },
+                    modifier = Modifier
+                        .size(48.dp)
+                        .weight(0.3f),
+                ) {
+                    Icon(
+                        Icons.Default.Edit,
+                        contentDescription = "Рукописный ввод",
+                        tint = MaterialTheme.colorScheme.secondary
+                    )
+                }
+
                 Button(
                     onClick = onImageCaptureRequested,
                     modifier = Modifier.weight(1f),

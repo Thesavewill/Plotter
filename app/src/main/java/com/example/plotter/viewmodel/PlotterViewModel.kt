@@ -35,6 +35,7 @@ import com.example.plotter.domain.model.toCanvasTransform
 import com.example.plotter.domain.model.toCanvasTransformData
 import com.example.plotter.domain.model.toPlotFunction
 import com.example.plotter.domain.model.toSavedFunction
+import com.example.plotter.domain.recognition.HandwritingRecognizer
 import com.example.plotter.ui.theme.AppColors
 
 class PlotterViewModel(
@@ -118,6 +119,15 @@ class PlotterViewModel(
                         )
                     }
                 }
+            }
+            is Intent.OpenHandwritingMode -> {
+                _state.update { it.copy(isHandwritingMode = true) }
+            }
+            is Intent.CloseHandwritingMode -> {
+                _state.update { it.copy(isHandwritingMode = false) }
+            }
+            is Intent.ProcessHandwritingInk -> {
+                processHandwritingRecognition(intent.ink)
             }
 
             Intent.SaveGraph -> saveCurrentGraph()
@@ -406,6 +416,40 @@ class PlotterViewModel(
         viewModelScope.launch {
             GraphRepository.deleteGraph(graphId)
             loadUserGraphs()
+        }
+    }
+
+    private fun processHandwritingRecognition(ink: com.google.mlkit.vision.digitalink.Ink) {
+        viewModelScope.launch {
+            _state.update { it.copy(isProcessingImage = true) }
+            try {
+                val rawText = withContext(Dispatchers.IO) {
+                    HandwritingRecognizer.recognize(ink)
+                }
+
+                if (rawText != null && rawText.isNotBlank()) {
+                    val equation = HandwritingRecognizer.preprocessEquation(rawText)
+                    if (isValidEquation(equation)) {
+                        addFunctionWithExpression(equation)
+                        _imageRecognitionEvents.send(ImageRecognitionEvent.ShowSuccess)
+                        _state.update { it.copy(isHandwritingMode = false) }
+                    } else {
+                        _imageRecognitionEvents.send(
+                            ImageRecognitionEvent.ShowError("Распознанный текст не похож на уравнение")
+                        )
+                    }
+                } else {
+                    _imageRecognitionEvents.send(
+                        ImageRecognitionEvent.ShowError("Не удалось распознать текст")
+                    )
+                }
+            } catch (e: Exception) {
+                _imageRecognitionEvents.send(
+                    ImageRecognitionEvent.ShowError("Ошибка: ${e.localizedMessage}")
+                )
+            } finally {
+                _state.update { it.copy(isProcessingImage = false) }
+            }
         }
     }
 }
