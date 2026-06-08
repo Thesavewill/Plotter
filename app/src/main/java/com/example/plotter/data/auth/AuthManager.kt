@@ -5,6 +5,10 @@ import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.GoogleAuthProvider
 import kotlinx.coroutines.tasks.await
 
+/**
+ * Синглтон для управления Firebase Authentication.
+ * Отвечает за вход, выход и получение текущего пользователя.
+ */
 object AuthManager {
     private val auth: FirebaseAuth = FirebaseAuth.getInstance()
 
@@ -17,6 +21,9 @@ object AuthManager {
     val currentUserEmail: String?
         get() = currentUser?.email
 
+    /**
+     * Выполняет вход через Google по полученному idToken.
+     */
     suspend fun signInWithGoogle(idToken: String): Result<FirebaseUser> {
         return try {
             val credential = GoogleAuthProvider.getCredential(idToken, null)
@@ -27,6 +34,7 @@ object AuthManager {
         }
     }
 
+    /** Выход из аккаунта */
     fun signOut() {
         auth.signOut()
     }

@@ -18,6 +18,10 @@ import com.example.plotter.ui.PlotterContract
 import net.objecthunter.exp4j.ExpressionBuilder
 import kotlin.math.pow
 
+/**
+ * Canvas-компонент для отрисовки сетки и графиков функций.
+ * Обрабатывает жесты перемещения и масштабирования.
+ */
 @Composable
 fun CanvasPlot(
     state: CanvasTransform,
@@ -39,10 +43,12 @@ fun CanvasPlot(
     ) {
         LaunchedEffect(constraints.maxWidth, constraints.maxHeight) {
             if (!state.isInitialized) {
-                onIntent(PlotterContract.Intent.CanvasInitialized(
-                    width = constraints.maxWidth.toFloat(),
-                    height = constraints.maxHeight.toFloat()
-                ))
+                onIntent(
+                    PlotterContract.Intent.CanvasInitialized(
+                        width = constraints.maxWidth.toFloat(),
+                        height = constraints.maxHeight.toFloat()
+                    )
+                )
             }
         }
 
@@ -57,9 +63,9 @@ fun CanvasPlot(
     }
 }
 
+/** Отрисовка одной функции на Canvas */
 private fun DrawScope.drawFunction(canvasState: CanvasTransform, function: PlotFunction) {
     if (canvasState.gridSize <= 0f) return
-
     val unitSize = canvasState.gridSize * 2.0.pow(canvasState.countScale.toDouble()).toFloat()
     val path = Path()
     var started = false
@@ -72,7 +78,6 @@ private fun DrawScope.drawFunction(canvasState: CanvasTransform, function: PlotF
     } catch (e: Exception) {
         null
     }
-
     if (compiledExpression == null) return
 
     val step = 1
@@ -83,7 +88,6 @@ private fun DrawScope.drawFunction(canvasState: CanvasTransform, function: PlotF
         } catch (e: Exception) {
             Float.NaN
         }
-
         val py = canvasState.offsetY - y * unitSize * 4
 
         if (py.isFinite()) {
@@ -101,7 +105,6 @@ private fun DrawScope.drawFunction(canvasState: CanvasTransform, function: PlotF
             started = false
         }
     }
-
     drawPath(
         path = path,
         color = function.color,

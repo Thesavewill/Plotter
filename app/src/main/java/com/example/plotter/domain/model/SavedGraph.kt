@@ -4,6 +4,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.TextFieldValue
 import java.util.UUID
 
+/** Модель сохранённого графика для Firestore */
 data class SavedGraph(
     val id: String = "",
     val name: String = "",
@@ -14,12 +15,14 @@ data class SavedGraph(
     val ownerId: String = ""
 )
 
+/** Сохранённая функция (сериализуемая версия PlotFunction) */
 data class SavedFunction(
     val id: String = UUID.randomUUID().toString(),
     val expression: String = "",
     val colorLong: Long = Color.Blue.value.toLong()
 )
 
+/** Сохранённое состояние холста */
 data class CanvasTransformData(
     val offsetX: Float = 0f,
     val offsetY: Float = 0f,
@@ -28,25 +31,36 @@ data class CanvasTransformData(
     val countScale: Int = 0
 )
 
-// === Конвертеры ===
-fun PlotFunction.toSavedFunction(): SavedFunction = SavedFunction(
-    id = this.id,
-    expression = this.expression.text,
-    colorLong = this.color.value.toLong()
-)
+// === Конвертеры между доменными и хранимыми моделями ===
 
-fun SavedFunction.toPlotFunction(): PlotFunction = PlotFunction(
-    id = this.id,
-    expression = TextFieldValue(this.expression),
-    color = Color(this.colorLong.toULong())
-)
+fun PlotFunction.toSavedFunction(): SavedFunction =
+    SavedFunction(
+        id = this.id,
+        expression = this.expression.text,
+        colorLong = this.color.value.toLong()
+    )
 
-fun CanvasTransform.toCanvasTransformData(): CanvasTransformData = CanvasTransformData(
-    offsetX = this.offsetX, offsetY = this.offsetY,
-    gridSize = this.gridSize, scale = this.scale, countScale = this.countScale
-)
+fun SavedFunction.toPlotFunction(): PlotFunction =
+    PlotFunction(
+        id = this.id,
+        expression = TextFieldValue(this.expression),
+        color = Color(this.colorLong.toULong())
+    )
 
-fun CanvasTransformData.toCanvasTransform(): CanvasTransform = CanvasTransform(
-    offsetX = this.offsetX, offsetY = this.offsetY,
-    gridSize = this.gridSize, scale = this.scale, countScale = this.countScale
-)
+fun CanvasTransform.toCanvasTransformData(): CanvasTransformData =
+    CanvasTransformData(
+        offsetX = this.offsetX,
+        offsetY = this.offsetY,
+        gridSize = this.gridSize,
+        scale = this.scale,
+        countScale = this.countScale
+    )
+
+fun CanvasTransformData.toCanvasTransform(): CanvasTransform =
+    CanvasTransform(
+        offsetX = this.offsetX,
+        offsetY = this.offsetY,
+        gridSize = this.gridSize,
+        scale = this.scale,
+        countScale = this.countScale
+    )

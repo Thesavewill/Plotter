@@ -5,6 +5,9 @@ import androidx.compose.ui.text.input.TextFieldValue
 import com.example.plotter.ui.theme.AppColors
 import java.util.UUID
 
+/**
+ * Модель одной функции на графике: выражение и цвет линии.
+ */
 data class PlotFunction(
     val id: String = UUID.randomUUID().toString(),
     val expression: TextFieldValue = TextFieldValue(""),

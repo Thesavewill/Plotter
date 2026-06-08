@@ -1,21 +1,29 @@
 package com.example.plotter.viewmodel
 
 import android.content.Context
-import android.graphics.Bitmap
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.example.plotter.data.auth.AuthManager
+import com.example.plotter.data.repository.GraphRepository
 import com.example.plotter.domain.evaluator.ExpressionEvaluator
 import com.example.plotter.domain.model.CanvasTransform
 import com.example.plotter.domain.model.PlotFunction
+import com.example.plotter.domain.model.SavedGraph
+import com.example.plotter.domain.model.toCanvasTransform
+import com.example.plotter.domain.model.toCanvasTransformData
+import com.example.plotter.domain.model.toPlotFunction
+import com.example.plotter.domain.model.toSavedFunction
+import com.example.plotter.domain.recognition.HandwritingRecognizer
 import com.example.plotter.domain.recognition.ImageRecognizer
 import com.example.plotter.ui.PlotterContract
 import com.example.plotter.ui.PlotterContract.Intent
 import com.example.plotter.ui.PlotterContract.State
+import com.example.plotter.ui.theme.AppColors
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
@@ -24,20 +32,14 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kotlinx.coroutines.flow.update
-import androidx.core.net.toUri
-import com.example.plotter.data.auth.AuthManager
-import com.example.plotter.data.repository.GraphRepository
-import com.example.plotter.domain.model.SavedGraph
-import com.example.plotter.domain.model.toCanvasTransform
-import com.example.plotter.domain.model.toCanvasTransformData
-import com.example.plotter.domain.model.toPlotFunction
-import com.example.plotter.domain.model.toSavedFunction
-import com.example.plotter.domain.recognition.HandwritingRecognizer
-import com.example.plotter.ui.theme.AppColors
 
+/**
+ * ViewModel для главного экрана. Реализует паттерн MVI.
+ * Обрабатывает Intent'ы, обновляет State и эмитит события.
+ */
 class PlotterViewModel(
     private val appContext: Context,
     private val imageRecognizer: ImageRecognizer = ImageRecognizer
@@ -46,12 +48,18 @@ class PlotterViewModel(
     private val _state = MutableStateFlow(State())
     val state: StateFlow<State> = _state.asStateFlow()
 
-    private val _imageRecognitionEvents = Channel<ImageRecognitionEvent>(Channel.BUFFERED)
+    private val _imageRecognitionEvents =
+        Channel<ImageRecognitionEvent>(Channel.BUFFERED)
     val imageRecognitionEvents: Flow<ImageRecognitionEvent> =
         _imageRecognitionEvents.receiveAsFlow()
 
     private var recognitionJob: Job? = null
 
+    init {
+        _state.update { it.copy(currentUserEmail = AuthManager.currentUserEmail) }
+    }
+
+    /** Маршрутизатор всех Intent'ов */
     fun handleIntent(intent: Intent) {
         when (intent) {
             is Intent.Pan -> updateCanvas {
@@ -60,13 +68,13 @@ class PlotterViewModel(
                     offsetY = it.offsetY + intent.dy
                 )
             }
-
             is Intent.Zoom -> handleZoom(intent.factor, intent.centerX, intent.centerY)
             is Intent.CanvasInitialized -> handleCanvasInit(intent.width, intent.height)
             is Intent.AddFunction -> addFunction(intent.position)
             is Intent.RemoveFunction -> removeFunction(intent.id)
             is Intent.UpdateExpression -> updateExpression(intent.id, intent.value)
-            is Intent.SelectFunction -> _state.update { it.copy(selectedFunctionId = intent.id) }
+            is Intent.SelectFunction ->
+                _state.update { it.copy(selectedFunctionId = intent.id) }
             is Intent.ChangeColor -> changeColor(intent.id, intent.color)
             is Intent.OpenColorPicker -> _state.update {
                 it.copy(
@@ -76,17 +84,13 @@ class PlotterViewModel(
                     )
                 )
             }
-
-            Intent.CloseColorPicker -> _state.update {
-                it.copy(colorPicker = PlotterContract.ColorPickerState())
-            }
-
+            Intent.CloseColorPicker ->
+                _state.update { it.copy(colorPicker = PlotterContract.ColorPickerState()) }
             Intent.OpenImageSourceDialog -> {
                 viewModelScope.launch {
                     _imageRecognitionEvents.send(ImageRecognitionEvent.RequestPermission)
                 }
             }
-
             is Intent.InsertSymbol -> insertSymbol(intent.symbol)
             Intent.DeleteSymbol -> deleteSymbol()
             Intent.RequestImageCapture -> {
@@ -94,19 +98,16 @@ class PlotterViewModel(
                     _imageRecognitionEvents.send(ImageRecognitionEvent.RequestPermission)
                 }
             }
-
             is Intent.ProcessImageUri -> {
                 processImageRecognition {
                     imageRecognizer.recognizeFromUri(appContext, intent.uri.toUri())
                 }
             }
-
             is Intent.ProcessImageBitmap -> {
                 processImageRecognition {
                     imageRecognizer.recognizeFromBitmap(intent.bitmap)
                 }
             }
-
             is Intent.ProcessGoogleSignIn -> {
                 viewModelScope.launch {
                     val result = AuthManager.signInWithGoogle(intent.idToken)
@@ -115,21 +116,20 @@ class PlotterViewModel(
                     }
                     result.onFailure { error ->
                         _imageRecognitionEvents.send(
-                            ImageRecognitionEvent.ShowError("Ошибка входа: ${error.localizedMessage}")
+                            ImageRecognitionEvent.ShowError(
+                                "Ошибка входа: ${error.localizedMessage}"
+                            )
                         )
                     }
                 }
             }
-            is Intent.OpenHandwritingMode -> {
+            // Рукописный ввод
+            is Intent.OpenHandwritingMode ->
                 _state.update { it.copy(isHandwritingMode = true) }
-            }
-            is Intent.CloseHandwritingMode -> {
+            is Intent.CloseHandwritingMode ->
                 _state.update { it.copy(isHandwritingMode = false) }
-            }
-            is Intent.ProcessHandwritingInk -> {
-                processHandwritingRecognition(intent.ink)
-            }
-
+            is Intent.ProcessHandwritingInk -> processHandwritingRecognition(intent.ink)
+            // Графики
             Intent.SaveGraph -> saveCurrentGraph()
             Intent.ShowSavedGraphs -> loadUserGraphs()
             is Intent.LoadGraph -> loadGraph(intent.graphId)
@@ -138,30 +138,35 @@ class PlotterViewModel(
                 AuthManager.signOut()
                 _state.update { it.copy(currentUserEmail = null) }
             }
-
-            is Intent.UpdateGraphName -> _state.update { it.copy(graphName = intent.name) }
-            Intent.CloseSaveDialog -> _state.update {
+            // Диалоги
+            is Intent.UpdateGraphName ->
+                _state.update { it.copy(graphName = intent.name) }
+            Intent.CloseSaveDialog ->
+                _state.update { it.copy(showSaveDialog = false, graphName = "") }
+            is Intent.RequestRenameGraph -> _state.update {
                 it.copy(
-                    showSaveDialog = false,
-                    graphName = ""
+                    showRenameDialog = true,
+                    renameGraphId = intent.graphId,
+                    renameGraphName = intent.currentName
                 )
             }
-
-            is Intent.RequestRenameGraph -> _state.update {
-                it.copy(showRenameDialog = true, renameGraphId = intent.graphId, renameGraphName = intent.currentName)
-            }
-            is Intent.UpdateRenameName -> _state.update { it.copy(renameGraphName = intent.name) }
+            is Intent.UpdateRenameName ->
+                _state.update { it.copy(renameGraphName = intent.name) }
             Intent.ConfirmRename -> confirmRename()
-            Intent.CloseRenameDialog -> _state.update { it.copy(showRenameDialog = false, renameGraphId = null, renameGraphName = "") }
-
-            Intent.CloseGraphsList -> _state.update { it.copy(showGraphsList = false) }
-            else -> {
+            Intent.CloseRenameDialog -> _state.update {
+                it.copy(
+                    showRenameDialog = false,
+                    renameGraphId = null,
+                    renameGraphName = ""
+                )
             }
+            Intent.CloseGraphsList ->
+                _state.update { it.copy(showGraphsList = false) }
+            else -> { }
         }
     }
-    init {
-        _state.update { it.copy(currentUserEmail = AuthManager.currentUserEmail) }
-    }
+
+    // === Обработка жестов холста ===
 
     private fun handleZoom(factor: Float, centerX: Float, centerY: Float) {
         _state.update { state ->
@@ -169,7 +174,6 @@ class PlotterViewModel(
             var newScale = canvas.scale * factor
             var newGridSize = canvas.gridSize * factor
             var newCountScale = canvas.countScale
-
             while (newScale >= 2f) {
                 newCountScale++
                 newScale /= 2f
@@ -180,10 +184,8 @@ class PlotterViewModel(
                 newScale *= 2f
                 newGridSize *= 2f
             }
-
             val newOffsetX = centerX - (centerX - canvas.offsetX) * factor
             val newOffsetY = centerY - (centerY - canvas.offsetY) * factor
-
             state.copy(
                 canvas = canvas.copy(
                     offsetX = newOffsetX,
@@ -212,6 +214,8 @@ class PlotterViewModel(
         }
     }
 
+    // === Управление функциями ===
+
     private fun addFunction(position: Int) {
         _state.update { state ->
             val newFunc = PlotFunction()
@@ -229,7 +233,8 @@ class PlotterViewModel(
             val newList = state.functions.filter { it.id != id }
             state.copy(
                 functions = newList.ifEmpty { listOf(PlotFunction()) },
-                selectedFunctionId = if (state.selectedFunctionId == id) null else state.selectedFunctionId
+                selectedFunctionId = if (state.selectedFunctionId == id)
+                    null else state.selectedFunctionId
             )
         }
     }
@@ -253,6 +258,8 @@ class PlotterViewModel(
             )
         }
     }
+
+    // === Клавиатура ===
 
     private fun insertSymbol(symbol: String) {
         val selectedId = _state.value.selectedFunctionId ?: return
@@ -301,6 +308,8 @@ class PlotterViewModel(
         _state.update { it.copy(canvas = update(it.canvas)) }
     }
 
+    // === Распознавание ===
+
     private fun processImageRecognition(recognize: suspend () -> String?) {
         recognitionJob?.cancel()
         recognitionJob = viewModelScope.launch {
@@ -313,13 +322,25 @@ class PlotterViewModel(
                         addFunctionWithExpression(equation)
                         _imageRecognitionEvents.send(ImageRecognitionEvent.ShowSuccess)
                     } else {
-                        _imageRecognitionEvents.send(ImageRecognitionEvent.ShowError("Распознанный текст не похож на уравнение"))
+                        _imageRecognitionEvents.send(
+                            ImageRecognitionEvent.ShowError(
+                                "Распознанный текст не похож на уравнение"
+                            )
+                        )
                     }
                 } else {
-                    _imageRecognitionEvents.send(ImageRecognitionEvent.ShowError("Не удалось распознать текст на изображении"))
+                    _imageRecognitionEvents.send(
+                        ImageRecognitionEvent.ShowError(
+                            "Не удалось распознать текст на изображении"
+                        )
+                    )
                 }
             } catch (e: Exception) {
-                _imageRecognitionEvents.send(ImageRecognitionEvent.ShowError("Ошибка распознавания: ${e.localizedMessage}"))
+                _imageRecognitionEvents.send(
+                    ImageRecognitionEvent.ShowError(
+                        "Ошибка распознавания: ${e.localizedMessage}"
+                    )
+                )
             } finally {
                 _state.update { it.copy(isProcessingImage = false) }
                 _imageRecognitionEvents.send(ImageRecognitionEvent.DismissLoading)
@@ -327,6 +348,7 @@ class PlotterViewModel(
         }
     }
 
+    /** Добавляет новую функцию с заданным выражением и уникальным цветом */
     private fun addFunctionWithExpression(expression: String) {
         _state.update { state ->
             val newFunc = PlotFunction(
@@ -340,14 +362,18 @@ class PlotterViewModel(
         }
     }
 
+    /** Проверка валидности математического выражения */
     private fun isValidEquation(expr: String): Boolean {
         if (expr.length > 200) return false
-        return expr.matches(Regex("^[a-zA-Z0-9+\\-*/^().,\\s]+$"))
+        return expr.matches(Regex("^[a-zA-Z0-9+\\-\\*/^().,\\s]+$"))
     }
 
+    /** Подбирает цвет, которого ещё нет в списке функций */
     private fun generateDistinctColor(usedColors: List<Color>): Color {
         val usedArgb = usedColors.map { it.value.toInt() }.toSet()
-        return AppColors.GraphDistinctColors.firstOrNull { it.value.toInt() !in usedArgb } ?: AppColors.GraphDefaultBlue
+        return AppColors.GraphDistinctColors
+            .firstOrNull { it.value.toInt() !in usedArgb }
+            ?: AppColors.GraphDefaultBlue
     }
 
     override fun onCleared() {
@@ -368,6 +394,8 @@ class PlotterViewModel(
         }
     }
 
+    // === Работа с БД графиков ===
+
     private fun saveCurrentGraph() {
         viewModelScope.launch {
             val ownerId = AuthManager.currentUser?.uid ?: return@launch
@@ -380,7 +408,6 @@ class PlotterViewModel(
                 createdAt = timestamp,
                 updatedAt = timestamp
             )
-
             GraphRepository.saveGraph(graph).onSuccess { newId ->
                 val savedGraph = graph.copy(id = newId)
                 _state.update { state ->
@@ -397,14 +424,19 @@ class PlotterViewModel(
 
     private fun loadUserGraphs() {
         viewModelScope.launch {
-            _state.update { it.copy(isLoadingGraphs = true, showGraphsList = true) }
-
+            _state.update {
+                it.copy(isLoadingGraphs = true, showGraphsList = true)
+            }
             val result = GraphRepository.getUserGraphs()
             result.onSuccess { graphs ->
-                _state.update { it.copy(savedGraphs = graphs, isLoadingGraphs = false) }
+                _state.update {
+                    it.copy(savedGraphs = graphs, isLoadingGraphs = false)
+                }
             }
             result.onFailure { error ->
-                _state.update { it.copy(isLoadingGraphs = false, error = error.localizedMessage) }
+                _state.update {
+                    it.copy(isLoadingGraphs = false, error = error.localizedMessage)
+                }
             }
         }
     }
@@ -412,7 +444,6 @@ class PlotterViewModel(
     private fun loadGraph(graphId: String) {
         viewModelScope.launch {
             _state.update { it.copy(isLoadingGraphs = true) }
-
             val result = GraphRepository.loadGraph(graphId)
             result.onSuccess { graph ->
                 _state.update {
@@ -432,13 +463,18 @@ class PlotterViewModel(
 
     private fun deleteGraph(graphId: String) {
         viewModelScope.launch {
+            // Оптимистичное обновление UI
             _state.update { state ->
-                state.copy(savedGraphs = state.savedGraphs.filter { it.id != graphId })
+                state.copy(
+                    savedGraphs = state.savedGraphs.filter { it.id != graphId }
+                )
             }
             GraphRepository.deleteGraph(graphId).onFailure { e ->
                 loadUserGraphs()
                 _imageRecognitionEvents.send(
-                    ImageRecognitionEvent.ShowError("Ошибка удаления: ${e.localizedMessage}")
+                    ImageRecognitionEvent.ShowError(
+                        "Ошибка удаления: ${e.localizedMessage}"
+                    )
                 )
             }
         }
@@ -447,7 +483,6 @@ class PlotterViewModel(
     private fun confirmRename() {
         val graphId = _state.value.renameGraphId ?: return
         val newName = _state.value.renameGraphName.trim()
-
         if (newName.isBlank()) {
             viewModelScope.launch {
                 _imageRecognitionEvents.send(
@@ -457,6 +492,7 @@ class PlotterViewModel(
             return
         }
         viewModelScope.launch {
+            // Оптимистичное обновление UI
             _state.update { state ->
                 state.copy(
                     showRenameDialog = false,
@@ -464,7 +500,10 @@ class PlotterViewModel(
                     renameGraphName = "",
                     savedGraphs = state.savedGraphs.map { graph ->
                         if (graph.id == graphId) {
-                            graph.copy(name = newName, updatedAt = System.currentTimeMillis())
+                            graph.copy(
+                                name = newName,
+                                updatedAt = System.currentTimeMillis()
+                            )
                         } else graph
                     }
                 )
@@ -478,14 +517,17 @@ class PlotterViewModel(
         }
     }
 
-    private fun processHandwritingRecognition(ink: com.google.mlkit.vision.digitalink.Ink) {
+    // === Рукописный ввод ===
+
+    private fun processHandwritingRecognition(
+        ink: com.google.mlkit.vision.digitalink.Ink
+    ) {
         viewModelScope.launch {
             _state.update { it.copy(isProcessingImage = true) }
             try {
                 val rawText = withContext(Dispatchers.IO) {
                     HandwritingRecognizer.recognize(ink)
                 }
-
                 if (rawText != null && rawText.isNotBlank()) {
                     val equation = HandwritingRecognizer.preprocessEquation(rawText)
                     if (isValidEquation(equation)) {
@@ -494,7 +536,9 @@ class PlotterViewModel(
                         _state.update { it.copy(isHandwritingMode = false) }
                     } else {
                         _imageRecognitionEvents.send(
-                            ImageRecognitionEvent.ShowError("Распознанный текст не похож на уравнение")
+                            ImageRecognitionEvent.ShowError(
+                                "Распознанный текст не похож на уравнение"
+                            )
                         )
                     }
                 } else {
@@ -513,6 +557,7 @@ class PlotterViewModel(
     }
 }
 
+/** События распознавания для одноразового потребления UI */
 sealed class ImageRecognitionEvent {
     data object RequestPermission : ImageRecognitionEvent()
     data class ShowError(val message: String) : ImageRecognitionEvent()

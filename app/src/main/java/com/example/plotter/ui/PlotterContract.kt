@@ -5,10 +5,14 @@ import androidx.compose.ui.text.input.TextFieldValue
 import com.example.plotter.domain.model.CanvasTransform
 import com.example.plotter.domain.model.PlotFunction
 import com.example.plotter.domain.model.SavedGraph
-import com.example.plotter.domain.recognition.HandwritingRecognizer
 
+/**
+ * Контракт MVI для экрана плоттера.
+ * Содержит State, Intent и ColorPickerState.
+ */
 object PlotterContract {
 
+    /** Глобальное состояние экрана */
     data class State(
         val canvas: CanvasTransform = CanvasTransform(),
         val functions: List<PlotFunction> = listOf(PlotFunction()),
@@ -29,15 +33,20 @@ object PlotterContract {
         val renameGraphName: String = ""
     )
 
+    /** Состояние диалога выбора цвета */
     data class ColorPickerState(
         val isVisible: Boolean = false,
         val targetFunctionId: String? = null
     )
 
+    /** Все возможные действия пользователя */
     sealed interface Intent {
+        // === Жесты Canvas ===
         data class Pan(val dx: Float, val dy: Float) : Intent
         data class Zoom(val factor: Float, val centerX: Float, val centerY: Float) : Intent
         data class CanvasInitialized(val width: Float, val height: Float) : Intent
+
+        // === Управление функциями ===
         data class AddFunction(val position: Int = -1) : Intent
         data class RemoveFunction(val id: String) : Intent
         data class UpdateExpression(val id: String, val value: TextFieldValue) : Intent
@@ -45,24 +54,40 @@ object PlotterContract {
         data class ChangeColor(val id: String, val color: Color) : Intent
         data class OpenColorPicker(val functionId: String) : Intent
         data object CloseColorPicker : Intent
+
+        // === Клавиатура ===
         data class InsertSymbol(val symbol: String) : Intent
         data object DeleteSymbol : Intent
+
+        // === Распознавание изображений ===
         data object RequestImageCapture : Intent
         data class ProcessImageUri(val uri: String) : Intent
         data class ProcessImageBitmap(val bitmap: android.graphics.Bitmap) : Intent
         data object OpenImageSourceDialog : Intent
+
+        // === Работа с БД графиков ===
         data object SaveGraph : Intent
         data class LoadGraph(val graphId: String) : Intent
         data object ShowSavedGraphs : Intent
         data class DeleteGraph(val graphId: String) : Intent
+
+        // === Авторизация ===
         data object SignOut : Intent
         data class ProcessGoogleSignIn(val idToken: String) : Intent
+
+        // === Диалог сохранения ===
         data class UpdateGraphName(val name: String) : Intent
         data object CloseSaveDialog : Intent
         data object CloseGraphsList : Intent
-        data object OpenHandwritingMode: Intent
-        data object CloseHandwritingMode: Intent
-        data class ProcessHandwritingInk(val ink: com.google.mlkit.vision.digitalink.Ink) : Intent
+
+        // === Рукописный ввод ===
+        data object OpenHandwritingMode : Intent
+        data object CloseHandwritingMode : Intent
+        data class ProcessHandwritingInk(
+            val ink: com.google.mlkit.vision.digitalink.Ink
+        ) : Intent
+
+        // === Переименование графика ===
         data class RequestRenameGraph(val graphId: String, val currentName: String) : Intent
         data class UpdateRenameName(val name: String) : Intent
         object ConfirmRename : Intent

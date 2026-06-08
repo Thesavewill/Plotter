@@ -7,6 +7,10 @@ import kotlin.math.sinh
 import kotlin.math.cosh
 import kotlin.math.tanh
 
+/**
+ * Пользовательские математические функции для exp4j.
+ * Содержит русские обозначения (tg, ctg) и гиперболические функции.
+ */
 object CustomFunctions {
     val tg = object : Function("tg", 1) {
         override fun apply(vararg args: Double): Double = tan(args[0])
@@ -32,9 +36,14 @@ object CustomFunctions {
     val all = listOf(tg, ctg, sh, ch, th)
 }
 
+/**
+ * Кэширующий evaluator математических выражений.
+ * Компилирует выражение один раз и переиспользует его.
+ */
 object ExpressionEvaluator {
     private val cache = mutableMapOf<String, net.objecthunter.exp4j.Expression>()
 
+    /** Вычисляет значение выражения для заданного x */
     fun evaluate(expression: String, x: Double): Double? {
         if (expression.isBlank()) return null
         return try {
@@ -50,6 +59,7 @@ object ExpressionEvaluator {
         }
     }
 
+    /** Очищает кэш скомпилированных выражений */
     fun clearCache() {
         cache.clear()
     }

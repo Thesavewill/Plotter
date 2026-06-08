@@ -1,7 +1,6 @@
 package com.example.plotter.ui.components
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -12,12 +11,14 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.example.plotter.ui.PlotterContract
 
+/**
+ * Кнопка аккаунта с выпадающим меню (сохранить, мои графики, выход).
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AccountButton(
@@ -42,8 +43,7 @@ fun AccountButton(
                     contentDescription = "Account",
                     tint = if (userEmail != null)
                         MaterialTheme.colorScheme.primary
-                    else
-                        MaterialTheme.colorScheme.onSurfaceVariant,
+                    else MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.size(32.dp)
                 )
             }
@@ -72,7 +72,7 @@ fun AccountButton(
                         fontWeight = FontWeight.Medium
                     )
                     Text(
-                        text = "test@gmail.com",
+                        text = userEmail,
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         fontWeight = FontWeight.SemiBold,
@@ -80,20 +80,17 @@ fun AccountButton(
                         overflow = TextOverflow.Ellipsis
                     )
                 }
-
                 HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
             }
 
-            // Элементы меню
+            // Элементы меню для авторизованных
             if (userEmail != null) {
                 DropdownMenuItem(
                     text = {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(12.dp)
-                        ) {
-                            Text("Сохранить график")
-                        }
+                        ) { Text("Сохранить график") }
                     },
                     onClick = {
                         onIntent(PlotterContract.Intent.SaveGraph)
@@ -107,15 +104,12 @@ fun AccountButton(
                         )
                     }
                 )
-
                 DropdownMenuItem(
                     text = {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(12.dp)
-                        ) {
-                            Text("Мои графики")
-                        }
+                        ) { Text("Мои графики") }
                     },
                     onClick = {
                         onIntent(PlotterContract.Intent.ShowSavedGraphs)
@@ -129,9 +123,7 @@ fun AccountButton(
                         )
                     }
                 )
-
                 HorizontalDivider()
-
                 DropdownMenuItem(
                     text = {
                         Row(
@@ -154,6 +146,7 @@ fun AccountButton(
                     }
                 )
             } else {
+                // Для неавторизованных пользователей
                 DropdownMenuItem(
                     text = {
                         Row(

@@ -10,7 +10,6 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
@@ -22,6 +21,10 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
 import com.google.mlkit.vision.digitalink.Ink
 
+/**
+ * Поле для рисования штрихов пальцем.
+ * Собирает штрихи и конвертирует их в Ink для ML Kit.
+ */
 @Composable
 fun InkCanvas(
     onRecognize: (Ink) -> Unit,
@@ -92,7 +95,6 @@ fun InkCanvas(
                             )
                         }
                     }
-
                     // Рисуем текущий штрих
                     if (currentStroke.size > 1) {
                         drawPath(
@@ -135,7 +137,6 @@ fun InkCanvas(
                     Spacer(Modifier.width(4.dp))
                     Text("Очистить")
                 }
-
                 OutlinedButton(
                     onClick = onDismiss,
                     modifier = Modifier.weight(1f),
@@ -143,7 +144,6 @@ fun InkCanvas(
                 ) {
                     Text("Отмена")
                 }
-
                 Button(
                     onClick = {
                         val ink = strokesToInk(strokes)
@@ -164,7 +164,7 @@ fun InkCanvas(
     }
 }
 
-// Конвертация списка штрихов Compose в ML Kit Ink
+/** Конвертация списка штрихов Compose в ML Kit Ink */
 private fun strokesToInk(strokes: List<List<Offset>>): Ink {
     val inkBuilder = Ink.builder()
     strokes.forEach { stroke ->

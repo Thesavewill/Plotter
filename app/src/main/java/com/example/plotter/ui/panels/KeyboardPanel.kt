@@ -20,8 +20,15 @@ import androidx.compose.ui.unit.sp
 import com.example.plotter.ui.PlotterContract
 import com.example.plotter.ui.theme.AppColors
 
-private data class KeyStyle(val bg: androidx.compose.ui.graphics.Color, val text: androidx.compose.ui.graphics.Color)
+/** Стиль кнопки (фон + цвет текста) */
+private data class KeyStyle(
+    val bg: androidx.compose.ui.graphics.Color,
+    val text: androidx.compose.ui.graphics.Color
+)
 
+/**
+ * Математическая клавиатура: цифры, функции, операторы.
+ */
 @Composable
 fun KeyboardPanel(
     onIntent: (PlotterContract.Intent) -> Unit,
@@ -37,14 +44,21 @@ fun KeyboardPanel(
             val buttonWidth = (maxWidth - gap * 4) / 5f
             val buttonHeight = buttonWidth * 2 / 3
 
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(gap)) {
-
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(gap)
+            ) {
                 // === ЛЕВАЯ ЧАСТЬ: ФУНКЦИИ ===
                 Column(
-                    modifier = Modifier.weight(1f).background(AppColors.KeyboardColumnBg, RoundedCornerShape(12.dp)).padding(4.dp),
+                    modifier = Modifier
+                        .weight(1f)
+                        .background(AppColors.KeyboardColumnBg, RoundedCornerShape(12.dp))
+                        .padding(4.dp),
                     verticalArrangement = Arrangement.spacedBy(gap)
                 ) {
-                    val trigKeys = listOf("sin()", "cos()", "tg()", "ctg()", "sh()", "ch()", "th()")
+                    val trigKeys = listOf(
+                        "sin()", "cos()", "tg()", "ctg()", "sh()", "ch()", "th()"
+                    )
                     LazyColumn(
                         modifier = Modifier.fillMaxSize(),
                         verticalArrangement = Arrangement.spacedBy(gap),
@@ -53,7 +67,9 @@ fun KeyboardPanel(
                         items(trigKeys) { key ->
                             KeyButton(
                                 text = key,
-                                onClick = { onIntent(PlotterContract.Intent.InsertSymbol(key)) },
+                                onClick = {
+                                    onIntent(PlotterContract.Intent.InsertSymbol(key))
+                                },
                                 width = buttonWidth,
                                 height = buttonHeight,
                                 containerColor = AppColors.KeyboardFunctionBg,
@@ -74,13 +90,17 @@ fun KeyboardPanel(
                         listOf("4", "5", "6"),
                         listOf("1", "2", "3")
                     )
-
                     numberRows.forEach { rowKeys ->
-                        Row(modifier = Modifier.height(buttonHeight), horizontalArrangement = Arrangement.spacedBy(gap)) {
+                        Row(
+                            modifier = Modifier.height(buttonHeight),
+                            horizontalArrangement = Arrangement.spacedBy(gap)
+                        ) {
                             rowKeys.forEach { key ->
                                 KeyButton(
                                     text = key,
-                                    onClick = { onIntent(PlotterContract.Intent.InsertSymbol(key)) },
+                                    onClick = {
+                                        onIntent(PlotterContract.Intent.InsertSymbol(key))
+                                    },
                                     width = buttonWidth,
                                     height = buttonHeight,
                                     containerColor = AppColors.KeyboardDigitBg,
@@ -89,36 +109,44 @@ fun KeyboardPanel(
                             }
                         }
                     }
-
-                    // Последняя строка: 0 и комбинированные кнопки
-                    Row(modifier = Modifier.height(buttonHeight), horizontalArrangement = Arrangement.spacedBy(gap)) {
+                    // Последняя строка: скобки, 0 и x
+                    Row(
+                        modifier = Modifier.height(buttonHeight),
+                        horizontalArrangement = Arrangement.spacedBy(gap)
+                    ) {
                         // Комбинированная кнопка ( / )
                         CombinedKeyButtonVertical(
                             leftText = "(",
                             rightText = ")",
-                            leftOnClick = { onIntent(PlotterContract.Intent.InsertSymbol("(")) },
-                            rightOnClick = { onIntent(PlotterContract.Intent.InsertSymbol(")")) },
+                            leftOnClick = {
+                                onIntent(PlotterContract.Intent.InsertSymbol("("))
+                            },
+                            rightOnClick = {
+                                onIntent(PlotterContract.Intent.InsertSymbol(")"))
+                            },
                             width = buttonWidth,
                             height = buttonHeight,
                             containerColor = AppColors.KeyboardFunctionBg,
                             contentColor = AppColors.KeyboardFunctionText,
                             fontSize = 16.sp
                         )
-
                         // Кнопка 0
                         KeyButton(
                             text = "0",
-                            onClick = { onIntent(PlotterContract.Intent.InsertSymbol("0")) },
+                            onClick = {
+                                onIntent(PlotterContract.Intent.InsertSymbol("0"))
+                            },
                             width = buttonWidth,
                             height = buttonHeight,
                             containerColor = AppColors.KeyboardDigitBg,
                             contentColor = AppColors.KeyboardDigitText
                         )
-
                         // Кнопка x
                         KeyButton(
                             text = "x",
-                            onClick = { onIntent(PlotterContract.Intent.InsertSymbol("x")) },
+                            onClick = {
+                                onIntent(PlotterContract.Intent.InsertSymbol("x"))
+                            },
                             width = buttonWidth,
                             height = buttonHeight,
                             containerColor = AppColors.KeyboardVariableBg,
@@ -143,33 +171,38 @@ fun KeyboardPanel(
                         contentColor = AppColors.KeyboardOperatorText,
                         fontSize = 14.sp
                     )
-
                     // Комбинированная кнопка * и /
                     CombinedKeyButtonVertical(
                         leftText = "*",
                         rightText = "/",
-                        leftOnClick = { onIntent(PlotterContract.Intent.InsertSymbol("*")) },
-                        rightOnClick = { onIntent(PlotterContract.Intent.InsertSymbol("/")) },
+                        leftOnClick = {
+                            onIntent(PlotterContract.Intent.InsertSymbol("*"))
+                        },
+                        rightOnClick = {
+                            onIntent(PlotterContract.Intent.InsertSymbol("/"))
+                        },
                         width = buttonWidth,
                         height = buttonHeight,
                         containerColor = AppColors.KeyboardOperatorBg,
                         contentColor = AppColors.KeyboardOperatorText,
                         verticalPadding = 20.dp
                     )
-
                     // Комбинированная кнопка + и -
                     CombinedKeyButtonVertical(
                         leftText = "+",
                         rightText = "-",
-                        leftOnClick = { onIntent(PlotterContract.Intent.InsertSymbol("+")) },
-                        rightOnClick = { onIntent(PlotterContract.Intent.InsertSymbol("-")) },
+                        leftOnClick = {
+                            onIntent(PlotterContract.Intent.InsertSymbol("+"))
+                        },
+                        rightOnClick = {
+                            onIntent(PlotterContract.Intent.InsertSymbol("-"))
+                        },
                         width = buttonWidth,
                         height = buttonHeight,
                         containerColor = AppColors.KeyboardOperatorBg,
                         contentColor = AppColors.KeyboardOperatorText,
                         verticalPadding = 20.dp
                     )
-
                     // Кнопка DEL
                     KeyButton(
                         text = "DEL",
@@ -186,10 +219,15 @@ fun KeyboardPanel(
     }
 }
 
+/** Обычная кнопка клавиатуры */
 @Composable
 private fun KeyButton(
-    text: String, onClick: () -> Unit, width: Dp, height: Dp,
-    containerColor: androidx.compose.ui.graphics.Color, contentColor: androidx.compose.ui.graphics.Color,
+    text: String,
+    onClick: () -> Unit,
+    width: Dp,
+    height: Dp,
+    containerColor: androidx.compose.ui.graphics.Color,
+    contentColor: androidx.compose.ui.graphics.Color,
     fontSize: androidx.compose.ui.unit.TextUnit = 13.sp
 ) {
     Surface(
@@ -200,10 +238,18 @@ private fun KeyButton(
         contentColor = contentColor,
         tonalElevation = 2.dp
     ) {
-        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
             Text(
                 text = text,
-                style = TextStyle(fontWeight = FontWeight.SemiBold, fontSize = fontSize, textAlign = TextAlign.Center, color = contentColor),
+                style = TextStyle(
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = fontSize,
+                    textAlign = TextAlign.Center,
+                    color = contentColor
+                ),
                 maxLines = 1,
                 softWrap = false
             )
@@ -211,6 +257,7 @@ private fun KeyButton(
     }
 }
 
+/** Комбинированная кнопка с вертикальным разделением */
 @Composable
 private fun CombinedKeyButtonVertical(
     leftText: String,
@@ -251,10 +298,12 @@ private fun CombinedKeyButtonVertical(
                     ),
                     maxLines = 1,
                     softWrap = false,
-                    modifier = Modifier.padding(horizontal = horizontalPadding, vertical = verticalPadding)
+                    modifier = Modifier.padding(
+                        horizontal = horizontalPadding,
+                        vertical = verticalPadding
+                    )
                 )
             }
-
             // Вертикальная разделительная линия
             Box(
                 modifier = Modifier
@@ -262,7 +311,6 @@ private fun CombinedKeyButtonVertical(
                     .width(1.dp)
                     .background(contentColor.copy(alpha = 0.3f))
             )
-
             // Правая половина
             Box(
                 modifier = Modifier
@@ -280,7 +328,10 @@ private fun CombinedKeyButtonVertical(
                     ),
                     maxLines = 1,
                     softWrap = false,
-                    modifier = Modifier.padding(horizontal = horizontalPadding, vertical = verticalPadding)
+                    modifier = Modifier.padding(
+                        horizontal = horizontalPadding,
+                        vertical = verticalPadding
+                    )
                 )
             }
         }

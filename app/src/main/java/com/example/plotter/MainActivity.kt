@@ -29,11 +29,11 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
+/** Точка входа приложения. Управляет разрешениями и внешними запусками */
 class MainActivity : ComponentActivity() {
+
     private val viewModel: PlotterViewModel by viewModels {
-        PlotterViewModel.Companion.Factory(
-            applicationContext
-        )
+        PlotterViewModel.Companion.Factory(applicationContext)
     }
 
     private val cameraLauncher = registerForActivityResult(
@@ -75,6 +75,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
         setContent {
             PlotterTheme {
                 val state by viewModel.state.collectAsState()
@@ -87,10 +88,14 @@ class MainActivity : ComponentActivity() {
                                 showImageSourceDialog(context)
                             }
                             is ImageRecognitionEvent.ShowError -> {
-                                Toast.makeText(context, event.message, Toast.LENGTH_SHORT).show()
+                                Toast.makeText(
+                                    context, event.message, Toast.LENGTH_SHORT
+                                ).show()
                             }
                             ImageRecognitionEvent.ShowSuccess -> {
-                                Toast.makeText(context, "Уравнение добавлено", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(
+                                    context, "Уравнение добавлено", Toast.LENGTH_SHORT
+                                ).show()
                             }
                             ImageRecognitionEvent.DismissLoading -> {}
                         }
@@ -108,17 +113,22 @@ class MainActivity : ComponentActivity() {
             }
         }
 
+        // Предзагрузка модели рукописного ввода
         lifecycleScope.launch {
             try {
                 if (!HandwritingRecognizer.isModelDownloaded()) {
                     HandwritingRecognizer.downloadModel()
                 }
             } catch (e: Exception) {
-                android.util.Log.e("Handwriting", "Failed to preload model: ${e.localizedMessage}")
+                android.util.Log.e(
+                    "Handwriting",
+                    "Failed to preload model: ${e.localizedMessage}"
+                )
             }
         }
     }
 
+    /** Показывает диалог выбора источника изображения */
     private fun showImageSourceDialog(context: android.content.Context) {
         val options = arrayOf("Сделать фото", "Выбрать из галереи")
         AlertDialog.Builder(context)
@@ -147,14 +157,17 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun requestStoragePermission() {
-        val permission = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+        val permission = if (android.os.Build.VERSION.SDK_INT >=
+            android.os.Build.VERSION_CODES.TIRAMISU
+        ) {
             Manifest.permission.READ_MEDIA_IMAGES
         } else {
             Manifest.permission.READ_EXTERNAL_STORAGE
         }
-
         when {
-            ContextCompat.checkSelfPermission(this, permission) == PackageManager.PERMISSION_GRANTED -> {
+            ContextCompat.checkSelfPermission(
+                this, permission
+            ) == PackageManager.PERMISSION_GRANTED -> {
                 imagePickerLauncher.launch("image/*")
             }
             else -> {
@@ -167,7 +180,6 @@ class MainActivity : ComponentActivity() {
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
         val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
-
         if (task.isSuccessful) {
             val account = task.result
             account.idToken?.let { token ->
@@ -191,9 +203,12 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    /** Запускает процесс входа через Google */
     private fun signInWithGoogle() {
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-            .requestIdToken("885514888340-6pauo0d34odk6ts9ga79os8fko9vm6ki.apps.googleusercontent.com")
+            .requestIdToken(
+                "885514888340-6pauo0d34odk6ts9ga79os8fko9vm6ki.apps.googleusercontent.com"
+            )
             .requestEmail()
             .build()
         val googleSignInClient = GoogleSignIn.getClient(this, gso)

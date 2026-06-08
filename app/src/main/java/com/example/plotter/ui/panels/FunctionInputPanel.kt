@@ -25,6 +25,9 @@ import androidx.compose.ui.unit.dp
 import com.example.plotter.domain.model.PlotFunction
 import com.example.plotter.ui.PlotterContract
 
+/**
+ * Панель со списком функций и кнопками действий.
+ */
 @Composable
 fun FunctionInputPanel(
     functions: List<PlotFunction>,
@@ -64,7 +67,9 @@ fun FunctionInputPanel(
                         item = item,
                         isSelected = item.id == selectedId,
                         onIntent = onIntent,
-                        onColorClick = { onIntent(PlotterContract.Intent.OpenColorPicker(item.id)) }
+                        onColorClick = {
+                            onIntent(PlotterContract.Intent.OpenColorPicker(item.id))
+                        }
                     )
                 }
                 item { Spacer(modifier = Modifier.height(8.dp)) }
@@ -87,13 +92,12 @@ fun FunctionInputPanel(
                     Spacer(Modifier.width(4.dp))
                     Text("Добавить")
                 }
-
                 // Кнопка для рукописного ввода
                 IconButton(
                     onClick = { onIntent(PlotterContract.Intent.OpenHandwritingMode) },
                     modifier = Modifier
                         .size(48.dp)
-                        .weight(0.3f),
+                        .weight(0.3f)
                 ) {
                     Icon(
                         Icons.Default.Edit,
@@ -101,7 +105,6 @@ fun FunctionInputPanel(
                         tint = MaterialTheme.colorScheme.secondary
                     )
                 }
-
                 Button(
                     onClick = onImageCaptureRequested,
                     modifier = Modifier.weight(1f),
@@ -120,6 +123,7 @@ fun FunctionInputPanel(
     }
 }
 
+/** Строка ввода одной функции */
 @Composable
 private fun FunctionRow(
     item: PlotFunction,
@@ -136,8 +140,7 @@ private fun FunctionRow(
         colors = CardDefaults.cardColors(
             containerColor = if (isSelected)
                 MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f)
-            else
-                MaterialTheme.colorScheme.surfaceVariant
+            else MaterialTheme.colorScheme.surfaceVariant
         ),
         border = if (isSelected) BorderStroke(2.dp, selectedColor) else null
     ) {
@@ -148,7 +151,7 @@ private fun FunctionRow(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            // Кнопка выбора цвета
+            // Кнопка выбора цвета (круглая с обводкой)
             IconButton(
                 onClick = onColorClick,
                 modifier = Modifier.size(32.dp)
@@ -158,14 +161,20 @@ private fun FunctionRow(
                         .size(22.dp)
                         .clip(CircleShape)
                         .background(item.color)
-                        .border(1.5.dp, MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f), CircleShape)
+                        .border(
+                            1.5.dp,
+                            MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+                            CircleShape
+                        )
                 )
             }
 
             // Поле ввода функции
             BasicTextField(
                 value = item.expression,
-                onValueChange = { onIntent(PlotterContract.Intent.UpdateExpression(item.id, it)) },
+                onValueChange = {
+                    onIntent(PlotterContract.Intent.UpdateExpression(item.id, it))
+                },
                 singleLine = true,
                 textStyle = LocalTextStyle.current.copy(
                     color = MaterialTheme.colorScheme.onSurface,
@@ -190,8 +199,10 @@ private fun FunctionRow(
                     ) {
                         if (item.expression.text.isEmpty()) {
                             Text(
-                                text = "f(x) = ",
-                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                                text = "f(x) =",
+                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(
+                                    alpha = 0.6f
+                                ),
                                 style = MaterialTheme.typography.bodyMedium
                             )
                         }

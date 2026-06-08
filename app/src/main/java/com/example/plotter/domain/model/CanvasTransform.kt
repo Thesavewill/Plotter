@@ -1,5 +1,8 @@
 package com.example.plotter.domain.model
 
+/**
+ * Состояние трансформации холста: смещение, масштаб, размер сетки.
+ */
 data class CanvasTransform(
     val offsetX: Float = 0f,
     val offsetY: Float = 0f,
