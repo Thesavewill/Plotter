@@ -61,7 +61,7 @@ object GridDrawer {
                     // Цифры на оси X
                     drawContext.canvas.nativeCanvas.drawText(
                         formatLabel(xVal),
-                        px - textPaint.textSize / 2f,
+                        px - textPaint.textSize,
                         canvasState.offsetY + 30f,
                         textPaint
                     )
@@ -92,7 +92,7 @@ object GridDrawer {
                 drawContext.canvas.nativeCanvas.drawText(
                     formatLabel(yVal),
                     canvasState.offsetX - 8f,
-                    py + textPaint.textSize / 2.5f,
+                    py + textPaint.textSize,
                     textPaint
                 )
             } else {
