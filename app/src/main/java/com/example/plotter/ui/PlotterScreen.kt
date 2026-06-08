@@ -38,7 +38,7 @@ fun PlotterScreen(
     onSignInRequested: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Scaffold(modifier = modifier.fillMaxSize(), contentWindowInsets = WindowInsets(0, 0, 0, 0)) { innerPadding ->
+    Scaffold(modifier = modifier.fillMaxSize(), contentWindowInsets = WindowInsets(0, 0, 0, 0), containerColor = AppColors.White) { innerPadding ->
         Box(modifier = Modifier.padding(innerPadding).fillMaxSize().navigationBarsPadding()) {
             CanvasPlot(state = state.canvas, functions = state.functions, onIntent = onIntent, modifier = Modifier.fillMaxSize())
 
