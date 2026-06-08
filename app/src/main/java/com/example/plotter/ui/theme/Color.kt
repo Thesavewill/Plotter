@@ -1,5 +1,6 @@
 package com.example.plotter.ui.theme
 
+import android.inputmethodservice.Keyboard
 import androidx.compose.ui.graphics.Color
 
 data class GridColors(

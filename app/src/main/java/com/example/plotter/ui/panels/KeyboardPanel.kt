@@ -1,6 +1,7 @@
 package com.example.plotter.ui.panels
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -37,30 +38,18 @@ fun KeyboardPanel(
             val buttonHeight = buttonWidth * 2 / 3
 
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(gap)) {
-                Column(modifier = Modifier.weight(3f), verticalArrangement = Arrangement.spacedBy(gap)) {
-                    val numberRows = listOf(listOf("7", "8", "9"), listOf("4", "5", "6"), listOf("1", "2", "3"), listOf("-", "0", "+"))
-                    numberRows.forEach { rowKeys ->
-                        Row(modifier = Modifier.height(buttonHeight), horizontalArrangement = Arrangement.spacedBy(gap)) {
-                            rowKeys.forEach { key ->
-                                val isOperator = key in listOf("+", "-", "*", "/")
-                                KeyButton(
-                                    text = key,
-                                    onClick = { onIntent(PlotterContract.Intent.InsertSymbol(key)) },
-                                    width = buttonWidth,
-                                    height = buttonHeight,
-                                    containerColor = if (isOperator) AppColors.KeyboardOperatorBg else AppColors.KeyboardDigitBg,
-                                    contentColor = if (isOperator) AppColors.KeyboardOperatorText else AppColors.KeyboardDigitText
-                                )
-                            }
-                        }
-                    }
-                }
 
+                // === ЛЕВАЯ ЧАСТЬ: ФУНКЦИИ ===
                 Column(
-                    modifier = Modifier.weight(1f).background(AppColors.KeyboardColumnBg, RoundedCornerShape(12.dp)).padding(4.dp)
+                    modifier = Modifier.weight(1f).background(AppColors.KeyboardColumnBg, RoundedCornerShape(12.dp)).padding(4.dp),
+                    verticalArrangement = Arrangement.spacedBy(gap)
                 ) {
                     val trigKeys = listOf("sin()", "cos()", "tg()", "ctg()", "sh()", "ch()", "th()")
-                    LazyColumn(modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(gap), contentPadding = PaddingValues(vertical = 2.dp)) {
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize(),
+                        verticalArrangement = Arrangement.spacedBy(gap),
+                        contentPadding = PaddingValues(vertical = 2.dp)
+                    ) {
                         items(trigKeys) { key ->
                             KeyButton(
                                 text = key,
@@ -69,30 +58,130 @@ fun KeyboardPanel(
                                 height = buttonHeight,
                                 containerColor = AppColors.KeyboardFunctionBg,
                                 contentColor = AppColors.KeyboardFunctionText,
-                                fontSize = 10.sp
+                                fontSize = 9.sp
                             )
                         }
                     }
                 }
 
-                Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(gap)) {
-                    val operatorKeys = listOf(
-                        "*" to KeyStyle(AppColors.KeyboardOperatorBg, AppColors.KeyboardOperatorText),
-                        "/" to KeyStyle(AppColors.KeyboardOperatorBg, AppColors.KeyboardOperatorText),
-                        "x" to KeyStyle(AppColors.KeyboardVariableBg, AppColors.KeyboardVariableText),
-                        "DEL" to KeyStyle(AppColors.KeyboardDeleteBg, AppColors.KeyboardDeleteText)
+                // === ЦЕНТРАЛЬНАЯ ЧАСТЬ: ЦИФРЫ ===
+                Column(
+                    modifier = Modifier.weight(3f),
+                    verticalArrangement = Arrangement.spacedBy(gap)
+                ) {
+                    val numberRows = listOf(
+                        listOf("7", "8", "9"),
+                        listOf("4", "5", "6"),
+                        listOf("1", "2", "3")
                     )
-                    operatorKeys.forEach { (key, style) ->
-                        KeyButton(
-                            text = key,
-                            onClick = { if (key == "DEL") onIntent(PlotterContract.Intent.DeleteSymbol) else onIntent(PlotterContract.Intent.InsertSymbol(key)) },
+
+                    numberRows.forEach { rowKeys ->
+                        Row(modifier = Modifier.height(buttonHeight), horizontalArrangement = Arrangement.spacedBy(gap)) {
+                            rowKeys.forEach { key ->
+                                KeyButton(
+                                    text = key,
+                                    onClick = { onIntent(PlotterContract.Intent.InsertSymbol(key)) },
+                                    width = buttonWidth,
+                                    height = buttonHeight,
+                                    containerColor = AppColors.KeyboardDigitBg,
+                                    contentColor = AppColors.KeyboardDigitText
+                                )
+                            }
+                        }
+                    }
+
+                    // Последняя строка: 0 и комбинированные кнопки
+                    Row(modifier = Modifier.height(buttonHeight), horizontalArrangement = Arrangement.spacedBy(gap)) {
+                        // Комбинированная кнопка ( / )
+                        CombinedKeyButtonVertical(
+                            leftText = "(",
+                            rightText = ")",
+                            leftOnClick = { onIntent(PlotterContract.Intent.InsertSymbol("(")) },
+                            rightOnClick = { onIntent(PlotterContract.Intent.InsertSymbol(")")) },
                             width = buttonWidth,
                             height = buttonHeight,
-                            containerColor = style.bg,
-                            contentColor = style.text,
-                            fontSize = if (key == "DEL") 11.sp else 14.sp
+                            containerColor = AppColors.KeyboardFunctionBg,
+                            contentColor = AppColors.KeyboardFunctionText,
+                            fontSize = 16.sp
+                        )
+
+                        // Кнопка 0
+                        KeyButton(
+                            text = "0",
+                            onClick = { onIntent(PlotterContract.Intent.InsertSymbol("0")) },
+                            width = buttonWidth,
+                            height = buttonHeight,
+                            containerColor = AppColors.KeyboardDigitBg,
+                            contentColor = AppColors.KeyboardDigitText
+                        )
+
+                        // Комбинированная кнопка x / y
+                        CombinedKeyButtonVertical(
+                            leftText = "x",
+                            rightText = "y",
+                            leftOnClick = { onIntent(PlotterContract.Intent.InsertSymbol("x")) },
+                            rightOnClick = { onIntent(PlotterContract.Intent.InsertSymbol("y")) },
+                            width = buttonWidth,
+                            height = buttonHeight,
+                            containerColor = AppColors.KeyboardVariableBg,
+                            contentColor = AppColors.KeyboardVariableText,
+                            fontSize = 14.sp
                         )
                     }
+                }
+
+                // === ПРАВАЯ ЧАСТЬ: ОПЕРАЦИИ ===
+                Column(
+                    modifier = Modifier.weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(gap)
+                ) {
+                    // Кнопка степени
+                    KeyButton(
+                        text = "^",
+                        onClick = { onIntent(PlotterContract.Intent.InsertSymbol("^")) },
+                        width = buttonWidth,
+                        height = buttonHeight,
+                        containerColor = AppColors.KeyboardOperatorBg,
+                        contentColor = AppColors.KeyboardOperatorText,
+                        fontSize = 14.sp
+                    )
+
+                    // Комбинированная кнопка * / /
+                    CombinedKeyButtonVertical(
+                        leftText = "*",
+                        rightText = "/",
+                        leftOnClick = { onIntent(PlotterContract.Intent.InsertSymbol("*")) },
+                        rightOnClick = { onIntent(PlotterContract.Intent.InsertSymbol("/")) },
+                        width = buttonWidth,
+                        height = buttonHeight,
+                        containerColor = AppColors.KeyboardOperatorBg,
+                        contentColor = AppColors.KeyboardOperatorText,
+                        verticalPadding = 20.dp
+                    )
+
+                    // Комбинированная кнопка + / -
+                    CombinedKeyButtonVertical(
+                        leftText = "+",
+                        rightText = "-",
+                        leftOnClick = { onIntent(PlotterContract.Intent.InsertSymbol("+")) },
+                        rightOnClick = { onIntent(PlotterContract.Intent.InsertSymbol("-")) },
+                        width = buttonWidth,
+                        height = buttonHeight,
+                        containerColor = AppColors.KeyboardOperatorBg,
+                        contentColor = AppColors.KeyboardOperatorText,
+                        verticalPadding = 20.dp
+                    )
+
+                    // Кнопка DEL
+                    KeyButton(
+                        text = "DEL",
+                        onClick = { onIntent(PlotterContract.Intent.DeleteSymbol) },
+                        width = buttonWidth,
+                        height = buttonHeight,
+                        containerColor = AppColors.KeyboardDeleteBg,
+                        contentColor = AppColors.KeyboardDeleteText,
+                        fontSize = 10.sp
+                    )
                 }
             }
         }
@@ -114,7 +203,88 @@ private fun KeyButton(
         tonalElevation = 2.dp
     ) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Text(text = text, style = TextStyle(fontWeight = FontWeight.SemiBold, fontSize = fontSize, textAlign = TextAlign.Center, color = contentColor), maxLines = 1, softWrap = false)
+            Text(
+                text = text,
+                style = TextStyle(fontWeight = FontWeight.SemiBold, fontSize = fontSize, textAlign = TextAlign.Center, color = contentColor),
+                maxLines = 1,
+                softWrap = false
+            )
+        }
+    }
+}
+
+@Composable
+private fun CombinedKeyButtonVertical(
+    leftText: String,
+    rightText: String,
+    leftOnClick: () -> Unit,
+    rightOnClick: () -> Unit,
+    width: Dp,
+    height: Dp,
+    containerColor: androidx.compose.ui.graphics.Color,
+    contentColor: androidx.compose.ui.graphics.Color,
+    fontSize: androidx.compose.ui.unit.TextUnit = 12.sp,
+    leftFontSize: androidx.compose.ui.unit.TextUnit = fontSize,
+    rightFontSize: androidx.compose.ui.unit.TextUnit = fontSize,
+    verticalPadding: Dp = 18.dp,
+    horizontalPadding: Dp = 2.dp
+) {
+    Surface(
+        modifier = Modifier.width(width).height(height).clip(RoundedCornerShape(8.dp)),
+        shape = RoundedCornerShape(8.dp),
+        color = containerColor,
+        tonalElevation = 2.dp
+    ) {
+        Row(modifier = Modifier.fillMaxSize()) {
+            // Левая половина
+            Box(
+                modifier = Modifier
+                    .weight(2f)
+                    .clickable(onClick = leftOnClick),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = leftText,
+                    style = TextStyle(
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = leftFontSize,
+                        textAlign = TextAlign.Center,
+                        color = contentColor
+                    ),
+                    maxLines = 1,
+                    softWrap = false,
+                    modifier = Modifier.padding(horizontal = horizontalPadding, vertical = verticalPadding)
+                )
+            }
+
+            // Вертикальная разделительная линия
+            Box(
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .width(1.dp)
+                    .background(contentColor.copy(alpha = 0.3f))
+            )
+
+            // Правая половина
+            Box(
+                modifier = Modifier
+                    .weight(2f)
+                    .clickable(onClick = rightOnClick),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = rightText,
+                    style = TextStyle(
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = rightFontSize,
+                        textAlign = TextAlign.Center,
+                        color = contentColor
+                    ),
+                    maxLines = 1,
+                    softWrap = false,
+                    modifier = Modifier.padding(horizontal = horizontalPadding, vertical = verticalPadding)
+                )
+            }
         }
     }
 }
