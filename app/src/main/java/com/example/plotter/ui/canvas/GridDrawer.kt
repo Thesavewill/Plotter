@@ -4,6 +4,7 @@ import android.graphics.Paint
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.nativeCanvas
+import androidx.compose.ui.unit.dp
 import com.example.plotter.domain.model.CanvasTransform
 import java.util.Locale
 import kotlin.math.*
@@ -49,6 +50,8 @@ object GridDrawer {
         val minorLinesPerMajor = calculateMinorLinesCount(niceStep)
         val minorPixelStep = majorPixelStep / minorLinesPerMajor
 
+        val safeBottom = height - 50.dp.toPx()
+
         // Вертикальные линии (ось X)
         textPaint.textAlign = Paint.Align.CENTER
         val startIdxX = floor((-canvasState.offsetX) / minorPixelStep).toInt()
@@ -67,7 +70,7 @@ object GridDrawer {
                     lineWidth
                 )
                 val xVal = (i / minorLinesPerMajor) * niceStep
-                if (xVal != 0.0) {
+                if (xVal != 0.0 && canvasState.offsetY + 8f < safeBottom) {
                     // Цифры на оси X
                     drawContext.canvas.nativeCanvas.drawText(
                         formatLabel(xVal),

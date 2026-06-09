@@ -40,7 +40,7 @@ fun PlotterScreen(
     modifier: Modifier = Modifier
 ) {
     Scaffold(
-        modifier = modifier.fillMaxSize(),
+        modifier = modifier.fillMaxSize().padding(bottom = 32.dp),
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
         containerColor = AppColors.White
     ) { innerPadding ->
@@ -48,7 +48,6 @@ fun PlotterScreen(
             modifier = Modifier
                 .padding(innerPadding)
                 .fillMaxSize()
-                .navigationBarsPadding()
         ) {
             // График на заднем плане
             CanvasPlot(
@@ -56,6 +55,7 @@ fun PlotterScreen(
                 functions = state.functions,
                 onIntent = onIntent,
                 modifier = Modifier.fillMaxSize()
+                    .padding(bottom = 40.dp)
             )
 
             // Кнопка аккаунта (правый верхний угол)
