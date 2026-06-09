@@ -139,7 +139,7 @@ fun InkCanvas(
                 }
                 OutlinedButton(
                     onClick = onDismiss,
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier.weight(0.8f),
                     shape = RoundedCornerShape(12.dp)
                 ) {
                     Text("Отмена")
@@ -151,7 +151,7 @@ fun InkCanvas(
                             onRecognize(ink)
                         }
                     },
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier.weight(1.1f),
                     shape = RoundedCornerShape(12.dp),
                     enabled = strokes.isNotEmpty()
                 ) {
